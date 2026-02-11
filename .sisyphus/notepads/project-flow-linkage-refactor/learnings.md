@@ -1,0 +1,3 @@
+- 2026-02-07: แยกกติกาคำนวณราคาเป็น shared helper (`lib/pricing.ts`) แล้ว reuse ใน frontend destination, backoffice booking, และ cart เพื่อกัน logic drift
+- 2026-02-07: การเก็บ `pricingTiers`, `isFlatRate`, `flatRatePrice`, `basePrice` ลง `LocalCartItem` ทำให้ cart สามารถ recalculation ตามกติกา tier/flat-rate ได้ถูกต้องเมื่อเปลี่ยน pax
+- 2026-02-07: เพิ่ม `recalculateLocalCartItem` ใน cart layer ช่วยรวมจุดคำนวณราคาไว้ที่เดียว ลดโอกาส bug จากการคูณ `unitPrice * pax` ตรงๆ

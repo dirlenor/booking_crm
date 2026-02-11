@@ -112,18 +112,18 @@ export default function CreatePackagePage() {
       <div className="flex items-center gap-2 text-muted-foreground text-sm">
         <Link href="/packages" className="flex items-center gap-1 hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          Back to Packages
+          Back to Products
         </Link>
       </div>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Create Package</h1>
-        <p className="text-muted-foreground">Add a new tour package to the catalog.</p>
+<h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Create Product</h1>
+          <p className="text-muted-foreground">Add a new product to the catalog.</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Package Details</CardTitle>
+          <CardTitle>Product Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid gap-6">
@@ -333,7 +333,7 @@ export default function CreatePackagePage() {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Create Package"}
+                {loading ? "Saving..." : "Create Product"}
               </Button>
             </div>
           </form>

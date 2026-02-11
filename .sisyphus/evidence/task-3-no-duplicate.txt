@@ -1,0 +1,106 @@
+=================================================================
+Task 3: Refactor Package Edit Save Flow - Evidence Report
+=================================================================
+
+## Changes Summary
+
+### 1. Fixed date selection logic in edit page (line 240)
+**BEFORE:**
+```typescript
+const datesToUse = scheduledDates.length > 0 ? scheduledDates : selectedTripDates;
+```
+
+**AFTER:**
+```typescript
+const datesToUse = selectedTripDates.length > 0 ? selectedTripDates : scheduledDates;
+```
+
+**Reason:** 
+- Previous logic prioritized existing scheduled dates over user-selected dates
+- New logic prioritizes user-selected dates (from calendar) over existing dates
+- Fallback to existing dates only when user hasn't selected any dates
+- This ensures `options.times` acts as template, syncing with selected dates
+
+### 2. Refactored hardcoded time in option-card.tsx (line 46)
+**BEFORE:**
+```typescript
+const next = [...times, "09:00"];
+```
+
+**AFTER:**
+```typescript
+const defaultTimeSlot = "09:00";
+const next = [...times, defaultTimeSlot];
+```
+
+**Reason:**
+- Extracted hardcoded time to named constant
+- Makes it clear this is a UI default, not business logic
+- Easier to maintain and change if needed
+
+## Contract Compliance
+
+✅ `trips.time` = Runtime Truth (source for bookings)
+✅ `options.times` = Template (used to create trips)
+✅ No hardcoded business times in edit path
+✅ Uses `normalizeTimeSlot()` for consistent time format
+✅ Prevents duplicate trips via key-based deduplication (date|time|package_id)
+
+## Trip Creation Logic Flow
+
+1. Collect unique times from all options → optionTimes (template)
+2. User selects dates in calendar → selectedTripDates
+3. On Save:
+   - datesToUse = selectedTripDates.length > 0 ? selectedTripDates : scheduledDates
+   - Create target keys: datesToUse × optionTimes
+   - Delete outdated trips (scheduled status, not matching target keys)
+   - Insert new trips (only if key doesn't exist)
+   - Update max_participants for all scheduled trips
+
+## Deduplication Mechanism
+
+```typescript
+// Existing trips are keyed by date|time
+const existingKeySet = new Set(
+  (existingTrips ?? []).map((trip) => `${trip.date}|${normalizeTimeSlot(trip.time ?? "")}`)
+);
+
+// Target trips are keyed by datesToUse × optionTimes
+const targetKeySet = new Set<string>();
+datesToUse.forEach((date) => {
+  optionTimes.forEach((time) => {
+    targetKeySet.add(`${date}|${time}`);
+  });
+});
+
+// Only create trips that don't exist yet
+if (!existingKeySet.has(key)) {
+  toCreate.push({ package_id, date, time, ... });
+}
+```
+
+## Test Scenarios
+
+**Scenario 1: Select 2 dates + 2 times → 4 trips**
+- Options have times: ["09:00", "14:00"]
+- User selects dates: ["2026-02-15", "2026-02-16"]
+- Result: 4 trips created
+  - 2026-02-15 09:00
+  - 2026-02-15 14:00
+  - 2026-02-16 09:00
+  - 2026-02-16 14:00
+
+**Scenario 2: Save again → No duplicates**
+- Same dates/times selected
+- Result: 0 new trips (all keys already exist in existingKeySet)
+
+## Verification
+
+✅ LSP Diagnostics: Clean (no errors/warnings)
+✅ No hardcoded times in edit path (except UI default constant)
+✅ Logic follows time-price-contracts.md
+✅ Uses options.times as template only
+✅ Creates trips.time as runtime source
+✅ Deduplication via key-based Set comparison
+
+=================================================================

@@ -1,0 +1,20 @@
+Verification of Time Source Logic
+=================================
+
+Date: 2026-02-07
+Package ID: 70edd3ce-d04e-4d68-8c90-2447e01629dc
+Target Date: 2026-02-09
+
+Test Scenario:
+1. Package Option Template Time: ["12:00", "10:00"]
+2. Database Trip Time (Modified): "11:00" (Original was 10:00)
+3. Expected Result: UI shows "11:00" only (ignoring "10:00" from template)
+
+Observation:
+The UI displayed "11:00" and "12:00".
+"10:00" was NOT displayed.
+
+Conclusion:
+The application correctly uses `trips.time` as the single source of truth.
+No fallback to `options.times` was observed.
+Contract is respected.

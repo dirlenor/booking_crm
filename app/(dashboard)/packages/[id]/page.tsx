@@ -63,11 +63,11 @@ export default function PackageDetailPage() {
   if (error || !pkg) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
-        <h2 className="text-xl font-semibold mb-2">Package Not Found</h2>
-        <p className="text-muted-foreground mb-4">The package you're looking for doesn't exist.</p>
-        <Link href="/packages" className="text-primary hover:underline">
-          ← Back to Packages
-        </Link>
+<h2 className="text-xl font-semibold mb-2">Product Not Found</h2>
+          <p className="text-muted-foreground mb-4">The product you're looking for doesn't exist.</p>
+          <Link href="/packages" className="text-primary hover:underline">
+            ← Back to Products
+          </Link>
       </div>
     );
   }
@@ -167,7 +167,7 @@ export default function PackageDetailPage() {
             </section>
 
             <section className="bg-white rounded-xl shadow-sm border p-6">
-              <h2 className="text-xl font-bold mb-4">Package Options</h2>
+              <h2 className="text-xl font-bold mb-4">Product Options</h2>
               {options.length === 0 ? (
                 <div className="text-muted-foreground text-center py-8 bg-gray-50 rounded-lg">
                   No options available for this package.
@@ -228,7 +228,7 @@ export default function PackageDetailPage() {
                 <Link href={`/packages/${packageId}/edit`} className="w-full">
                   <Button variant="outline" className="w-full gap-2">
                     <Edit className="h-4 w-4" />
-                    Edit Package
+                    Edit Product
                   </Button>
                 </Link>
                 <Button variant="outline" className="w-full gap-2">

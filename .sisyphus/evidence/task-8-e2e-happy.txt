@@ -1,0 +1,22 @@
+Task 8 validation status: USER-WAIVED FULL E2E
+Timestamp: 2026-02-10 (Asia/Bangkok)
+
+Reason:
+- User requested to skip full E2E because execution is too slow.
+
+Executed smoke validation instead:
+1) Command: npm run build
+2) Result: PASS (Next.js build completed successfully)
+3) Build output confirms key routes generated, including:
+   - /
+   - /destinations
+   - /destinations/[slug]
+   - /cart
+   - /my-bookings
+   - /bookings
+   - /payments
+
+Risk note:
+- Full cross-flow E2E (admin -> frontend -> booking persistence -> DB consistency)
+  is NOT executed in this run.
+- If regressions appear in runtime integrations, run full Task 8 scenarios later.

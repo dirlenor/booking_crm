@@ -1,0 +1,4 @@
+- 2026-02-07: ตัดสินใจใช้ `resolveOptionPricing` เป็น single source สำหรับ pricing rules (flat-rate + tier + fallback base price) แทนการคำนวณซ้ำในแต่ละหน้าจอ
+- 2026-02-07: ใน backoffice booking ใช้ option แรกของ package เป็น pricing option ชั่วคราว เพราะ flow ปัจจุบันยังไม่มี UI ให้เลือก option ตอนสร้าง booking
+- 2026-02-07: cart ใช้การ recalculation ผ่าน metadata ที่บันทึกกับแต่ละรายการ เพื่อให้การเปลี่ยน pax สอดคล้องกับ contract เดียวกับ frontend/backoffice
+- 2026-02-10: User approved skipping full Task 8 E2E execution due to speed concerns; replaced with smoke validation (`npm run build`) and documented risk/evidence.

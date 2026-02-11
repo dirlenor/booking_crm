@@ -1,0 +1,4 @@
+- 2026-02-07: เลือกชนิดข้อมูล `time` เป็น PostgreSQL `time` เพื่อ validation รูปแบบเวลาโดยตรงจาก DB แทนการปล่อยเป็น `text`.
+- 2026-02-07: ใช้ RLS policy แยกตาม action (`select/insert/update/delete`) และกำหนด `to authenticated` ตามแนวทาง Supabase เพื่อจำกัดเฉพาะผู้ล็อกอิน.
+- 2026-02-07: เพิ่ม trigger `set_trips_updated_at` สำหรับดูแล `updated_at` อัตโนมัติเมื่อมีการแก้ไข row.
+- 2026-02-07: เพิ่ม `onDatesChange?: (dates: string[]) => void` ใน `TripScheduleEditor` แบบ optional callback เพื่อส่ง selected dates ไป parent โดยไม่เปลี่ยนพฤติกรรม UI เดิมของ component.

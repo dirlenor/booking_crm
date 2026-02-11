@@ -1,0 +1,1 @@
+- 2026-02-07: ยังไม่ได้รัน apply migration กับโปรเจกต์ Supabase จริงในรอบนี้ จึงยังไม่ยืนยันผล runtime/permission บน environment จริง.

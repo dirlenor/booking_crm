@@ -1,0 +1,15 @@
+Task 6 Pricing Verification
+============================
+flatPax1 { unitPrice: 5000, total: 5000, isFlatRate: true }
+flatPax3 { unitPrice: 5000, total: 5000, isFlatRate: true }
+tierPax1 { unitPrice: 1000, total: 1000, isFlatRate: false }
+tierPax3 { unitPrice: 900, total: 2700, isFlatRate: false }
+cartTierPax3 { pax: 3, unitPrice: 900, totalPrice: 2700 }
+frontendTotal 2700
+backofficeTotal 2700
+
+[PASS] Flat-rate keeps total constant
+[PASS] Tier pax=1 uses tier 1
+[PASS] Tier pax=3 uses tier 2
+[PASS] Cart recalculation follows tier 2 for pax=3
+[PASS] Backoffice total matches frontend total

@@ -1,0 +1,2 @@
+- 2026-02-07: ไม่มี SQL LSP ใน environment นี้ จึงไม่สามารถตรวจ `lsp_diagnostics` สำหรับไฟล์ migration ได้โดยตรง.
+- 2026-02-07: `npm run build` ยัง fail จาก type error เดิมที่ `app/(dashboard)/bookings/[id]/page.tsx:90` (`TourPackage` type ไม่ตรง) ซึ่งไม่เกี่ยวกับงานแก้ trips sync รอบนี้.

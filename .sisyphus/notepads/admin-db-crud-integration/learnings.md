@@ -1,0 +1,4 @@
+- 2026-02-07: ตาราง `trips` ฝั่ง frontend ใช้ fields หลักคือ `id`, `date`, `time`, `status`, `max_participants`, `guide_name` และ query ด้วย `package_id` + sort by `date`.
+- 2026-02-07: การทำ bulk insert จาก UI ส่งค่าเริ่มต้น `status = 'scheduled'` และ `guide_name = 'TBD'` จึงควรกำหนด default/status check ใน schema.
+- 2026-02-07: หน้า `app/(dashboard)/packages/[id]/edit/page.tsx` ต้องเก็บวันที่ที่ผู้ใช้เลือกจาก Trip calendar ไว้ใน parent state เพราะการสลับ tab ทำให้ `TripScheduleEditor` unmount และ state ภายในหาย.
+- 2026-02-07: logic sync trips ควร fallback เป็น `selectedTripDates` เมื่อยังไม่มี scheduled trips เดิม เพื่อให้ flow "เลือกวัน -> เพิ่ม option times -> Save" สร้าง trips ได้ทันที.

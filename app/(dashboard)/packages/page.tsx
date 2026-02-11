@@ -136,8 +136,8 @@ export default function PackagesPage() {
     <div className="flex flex-col gap-6 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Tour Packages</h1>
-          <p className="text-muted-foreground">Manage tour packages, itineraries, and quotas.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Products</h1>
+          <p className="text-muted-foreground">Manage products, itineraries, and quotas.</p>
         </div>
         <Button asChild className="gap-2 shrink-0">
           <Link href="/packages/create">

@@ -1,0 +1,1 @@
+- 2026-02-07: Backoffice create booking ยังไม่มี option selector ใน UI ทำให้ยังไม่สามารถเลือก pricing option ที่ต่างจาก option แรกได้ตรงๆ (ต้องต่อยอดใน task ถัดไป)

@@ -311,16 +311,16 @@ export default function EditPackagePage() {
       <div className="flex items-center gap-2 text-muted-foreground text-sm">
         <Link href="/packages" className="flex items-center gap-1 hover:text-foreground transition-colors">
           <ArrowLeft className="h-4 w-4" />
-          Back to Packages
+          Back to Products
         </Link>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Edit Package{formData.name ? `: ${formData.name}` : ""}
+            Edit Product{formData.name ? `: ${formData.name}` : ""}
           </h1>
-          <p className="text-muted-foreground">Update details and options for this package.</p>
+          <p className="text-muted-foreground">Update details and options for this product.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" variant="outline" onClick={() => router.push("/packages")}>
@@ -334,7 +334,7 @@ export default function EditPackagePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Edit Package{formData.name ? ` - ${formData.name}` : ""}</CardTitle>
+          <CardTitle>Edit Product{formData.name ? ` - ${formData.name}` : ""}</CardTitle>
         </CardHeader>
         <CardContent>
           <form id="package-edit-form" onSubmit={handleSubmit} className="grid gap-6">
@@ -391,7 +391,7 @@ export default function EditPackagePage() {
               {activeTab === "details" && (
                 <div className="rounded-xl border border-input bg-background shadow-sm">
                   <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Package Details</h2>
+                    <h2 className="text-base font-semibold text-foreground">Product Details</h2>
                   </div>
                   <div className="border-t border-input px-4 py-5 space-y-6">
                     <div className="grid gap-2">
@@ -528,7 +528,7 @@ export default function EditPackagePage() {
               {activeTab === "images" && (
                 <div className="rounded-xl border border-input bg-background shadow-sm">
                   <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Package Images</h2>
+                    <h2 className="text-base font-semibold text-foreground">Product Images</h2>
                     <div className="text-xs text-muted-foreground">Max 6</div>
                   </div>
                   <div className="border-t border-input px-4 py-5">
@@ -548,7 +548,7 @@ export default function EditPackagePage() {
               {activeTab === "options" && (
                 <div className="rounded-xl border border-input bg-background shadow-sm">
                   <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Package Options</h2>
+                    <h2 className="text-base font-semibold text-foreground">Product Options</h2>
                   </div>
                   <div className="border-t border-input px-4 py-5">
                     <PackageOptionsEditor value={packageOptions} onChange={setPackageOptions} showHeading={false} />
@@ -559,7 +559,7 @@ export default function EditPackagePage() {
               {activeTab === "itinerary" && (
                 <div className="rounded-xl border border-input bg-background shadow-sm">
                   <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Package Itinerary</h2>
+                    <h2 className="text-base font-semibold text-foreground">Product Itinerary</h2>
                   </div>
                   <div className="border-t border-input px-4 py-5">
                     <ItineraryEditor value={itineraryItems} onChange={setItineraryItems} />
