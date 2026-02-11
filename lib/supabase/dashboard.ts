@@ -21,7 +21,7 @@ export async function getDashboardStats(): Promise<ServiceResponse<DashboardStat
         .from('trips')
         .select('id', { count: 'exact', head: true })
         .gte('date', today)
-        .in('status', ['scheduled', 'active']),
+        .eq('status', 'scheduled'),
       supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })
@@ -79,7 +79,7 @@ export async function getUpcomingTrips(
     .from('trips')
     .select('*, packages(*)')
     .gte('date', today)
-    .in('status', ['scheduled', 'active'])
+    .eq('status', 'scheduled')
     .order('date', { ascending: true })
     .limit(limit);
 
