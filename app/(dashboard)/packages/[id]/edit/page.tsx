@@ -1,20 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase/client";
 import { getPackageById, getPackageItinerary, updatePackage, upsertPackageItinerary } from "@/lib/supabase/packages";
 import { PackageOptionsEditor } from "@/components/features/packages/price-options/package-options-editor";
 import { TripScheduleEditor } from "@/components/features/packages/trips/trip-schedule-editor";
 import { PackageImagesUploader } from "@/components/features/packages/package-images-uploader";
 import { ItineraryEditor, type PackageItineraryItem } from "@/components/features/packages/itinerary/itinerary-editor";
+import ProductBackofficeLayout, { FormCard, FormField } from "@/components/features/products/product-backoffice-layout";
 import type { PackageOption } from "@/types/package-options";
 import type { PackageUpdate, PackageStatus, PackageCategory } from "@/types/database";
+import { FileText, Route, Settings, Info, Image, Calendar } from "lucide-react";
 
 const normalizeTimeSlot = (value: string) => {
   const trimmed = String(value || "").trim();
@@ -39,7 +38,7 @@ export default function EditPackagePage() {
   const packageId = params?.id ?? "";
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"details" | "images" | "options" | "itinerary" | "trips">("details");
+  const [activeTab, setActiveTab] = useState("details");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -60,6 +59,7 @@ export default function EditPackagePage() {
   const [itineraryItems, setItineraryItems] = useState<PackageItineraryItem[]>([]);
   const [tripDates, setTripDates] = useState<string[]>([]);
 
+  // Load package data
   useEffect(() => {
     const loadPackage = async () => {
       if (!packageId) return;
@@ -80,15 +80,13 @@ export default function EditPackagePage() {
       const data = packageRes.data;
       const dayMatch = data.duration?.match(/(\d+)\s*Day/i);
       const nightMatch = data.duration?.match(/(\d+)\s*Night/i);
-      const durationDays = dayMatch?.[1] ?? "";
-      const durationNights = nightMatch?.[1] ?? "";
 
       setFormData({
         name: data.name ?? "",
         description: data.description ?? "",
         destination: data.destination ?? "",
-        durationDays,
-        durationNights,
+        durationDays: dayMatch?.[1] ?? "",
+        durationNights: nightMatch?.[1] ?? "",
         basePrice: data.base_price ? String(data.base_price) : "",
         maxPax: data.max_pax ? String(data.max_pax) : "",
         status: data.status ?? "draft",
@@ -103,10 +101,8 @@ export default function EditPackagePage() {
       });
 
       if (Array.isArray(data.options)) {
-        console.log('Loaded options:', data.options);
         setPackageOptions(data.options as PackageOption[]);
       } else {
-        console.log('No options array in data');
         setPackageOptions([]);
       }
 
@@ -129,8 +125,9 @@ export default function EditPackagePage() {
     loadPackage();
   }, [packageId]);
 
-  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Handle form submit
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!packageId) return;
     setLoading(true);
     setErrorMessage(null);
@@ -184,15 +181,13 @@ export default function EditPackagePage() {
     const itineraryRes = await upsertPackageItinerary(packageId, cleanItinerary);
 
     if (itineraryRes.error) {
-      setErrorMessage(`Package saved, but itinerary sync failed: ${itineraryRes.error}`);
+      setErrorMessage(`Product saved, but itinerary sync failed: ${itineraryRes.error}`);
       setLoading(false);
       return;
     }
 
+    // Sync trips logic
     const optionTimes = collectUniqueOptionTimes(packageOptions);
-    console.log('Submitting. optionTimes:', optionTimes);
-    console.log('tripDates state:', tripDates);
-
     if (optionTimes.length > 0) {
       const { data: existingTrips, error: tripError } = await supabase
         .from("trips")
@@ -200,7 +195,7 @@ export default function EditPackagePage() {
         .eq("package_id", packageId);
 
       if (tripError) {
-        setErrorMessage(`Package saved, but sync trips failed: ${tripError.message}`);
+        setErrorMessage(`Product saved, but sync trips failed: ${tripError.message}`);
         setLoading(false);
         return;
       }
@@ -246,7 +241,7 @@ export default function EditPackagePage() {
             .in("id", toDeleteIds);
 
           if (deleteError) {
-            setErrorMessage(`Package saved, but removing outdated trip slots failed: ${deleteError.message}`);
+            setErrorMessage(`Product saved, but removing outdated trip slots failed: ${deleteError.message}`);
             setLoading(false);
             return;
           }
@@ -281,7 +276,7 @@ export default function EditPackagePage() {
         if (toCreate.length > 0) {
           const { error: createError } = await supabase.from("trips").insert(toCreate);
           if (createError) {
-            setErrorMessage(`Package saved, but creating synced trips failed: ${createError.message}`);
+            setErrorMessage(`Product saved, but creating synced trips failed: ${createError.message}`);
             setLoading(false);
             return;
           }
@@ -295,7 +290,7 @@ export default function EditPackagePage() {
           .in("date", datesToUse);
 
         if (updateMaxError) {
-          setErrorMessage(`Package saved, but syncing max participants failed: ${updateMaxError.message}`);
+          setErrorMessage(`Product saved, but syncing max participants failed: ${updateMaxError.message}`);
           setLoading(false);
           return;
         }
@@ -306,287 +301,240 @@ export default function EditPackagePage() {
     router.refresh();
   };
 
+  // Tabs configuration
+  const tabs = [
+    { id: "details", label: "Details", icon: <FileText className="size-4" /> },
+    { id: "images", label: "Images", icon: <Image className="size-4" /> },
+    { id: "options", label: "Options", icon: <Settings className="size-4" /> },
+    { id: "itinerary", label: "Itinerary", icon: <Route className="size-4" /> },
+    { id: "trips", label: "Trips", icon: <Calendar className="size-4" /> },
+  ];
+
+  // Checklist items (simplified - could be dynamic based on completion)
+  const checklistItems = [
+    { id: "1", label: "Product name", completed: formData.name.length > 0, required: true },
+    { id: "2", label: "Description", completed: formData.description.length > 0, required: true },
+    { id: "3", label: "Product images (min 1)", completed: formData.imageUrls.length > 0, required: true },
+    { id: "4", label: "Pricing options", completed: packageOptions.length > 0, required: true },
+    { id: "5", label: "Itinerary details", completed: itineraryItems.length > 0, required: false },
+    { id: "6", label: "Trip schedule", completed: true, required: false },
+  ];
+
+  const completedCount = checklistItems.filter((i) => i.completed).length;
+  const progress = Math.round((completedCount / checklistItems.length) * 100);
+
+  // Mock activity groups for sidebar (could fetch real data)
+  const activityGroups = [
+    {
+      id: "current",
+      name: "Current Activity",
+      packages: [
+        {
+          id: packageId,
+          name: formData.name || "Loading...",
+          status: formData.status as "published" | "draft" | "archived",
+          type: "package" as const,
+        },
+      ],
+    },
+  ];
+
+  const statusVariant = formData.status === "published" ? "success" : formData.status === "draft" ? "warning" : "default";
+
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
-        <Link href="/packages" className="flex items-center gap-1 hover:text-foreground transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Products
-        </Link>
-      </div>
+    <form onSubmit={handleSubmit}>
+      <ProductBackofficeLayout
+        title={`${packageId}-${formData.name || "Loading..."}`}
+        subtitle={`ID: ${packageId}`}
+        status={{ label: formData.status.charAt(0).toUpperCase() + formData.status.slice(1), variant: statusVariant }}
+        primaryAction={{
+          label: loading ? "Saving..." : "Save Changes",
+          onClick: () => handleSubmit(),
+          variant: "default",
+        }}
+        secondaryActions={[
+          {
+            label: "Cancel",
+            onClick: () => router.push("/packages"),
+          },
+        ]}
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        activityGroups={activityGroups}
+        selectedPackageId={packageId}
+        showChecklist={true}
+        checklistItems={checklistItems}
+        checklistProgress={progress}
+      >
+        {errorMessage && (
+          <div className="mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {errorMessage}
+          </div>
+        )}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Edit Product{formData.name ? `: ${formData.name}` : ""}
-          </h1>
-          <p className="text-muted-foreground">Update details and options for this product.</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="button" variant="outline" onClick={() => router.push("/packages")}>
-            Cancel
-          </Button>
-          <Button type="submit" form="package-edit-form" disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </div>
+        {/* TAB: Details */}
+        {activeTab === "details" && (
+          <div className="max-w-3xl space-y-6">
+            <FormCard title="Basic Information">
+              <div className="space-y-4">
+                <FormField label="Product name" required>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Enter product name"
+                  />
+                </FormField>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit Product{formData.name ? ` - ${formData.name}` : ""}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form id="package-edit-form" onSubmit={handleSubmit} className="grid gap-6">
-            {errorMessage && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                {errorMessage}
-              </div>
-            )}
+                <FormField label="Description" required>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full min-h-[120px] px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    placeholder="Enter product description"
+                  />
+                </FormField>
 
-            <div className="grid gap-6">
-              <div className="flex flex-wrap items-center gap-2 border-b pb-3">
-                <Button
-                  type="button"
-                  variant={activeTab === "details" ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() => setActiveTab("details")}
-                >
-                  Details
-                </Button>
-                <Button
-                  type="button"
-                  variant={activeTab === "images" ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() => setActiveTab("images")}
-                >
-                  Images
-                </Button>
-                <Button
-                  type="button"
-                  variant={activeTab === "options" ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() => setActiveTab("options")}
-                >
-                  Options
-                </Button>
-                <Button
-                  type="button"
-                  variant={activeTab === "itinerary" ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() => setActiveTab("itinerary")}
-                >
-                  Itinerary
-                </Button>
-                <Button
-                  type="button"
-                  variant={activeTab === "trips" ? "default" : "ghost"}
-                  className="rounded-full"
-                  onClick={() => setActiveTab("trips")}
-                >
-                  Trips
-                </Button>
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField label="Destination">
+                    <Input
+                      value={formData.destination}
+                      onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                      placeholder="e.g., Bangkok, Thailand"
+                    />
+                  </FormField>
 
-              {activeTab === "details" && (
-                <div className="rounded-xl border border-input bg-background shadow-sm">
-                  <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Product Details</h2>
-                  </div>
-                  <div className="border-t border-input px-4 py-5 space-y-6">
-                    <div className="grid gap-2">
-                      <label htmlFor="name" className="text-sm font-medium">Name</label>
+                  <FormField label="Duration">
+                    <div className="grid grid-cols-2 gap-2">
                       <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-                        placeholder="Grand Palace & Emerald Buddha Tour"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <label htmlFor="description" className="text-sm font-medium">Description</label>
-                      <textarea
-                        id="description"
-                        className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        value={formData.description}
-                        onChange={(event) => setFormData({ ...formData, description: event.target.value })}
-                        placeholder="Short description of the tour..."
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <label htmlFor="destination" className="text-sm font-medium">Destination</label>
-                        <Input
-                          id="destination"
-                          value={formData.destination}
-                          onChange={(event) => setFormData({ ...formData, destination: event.target.value })}
-                          placeholder="Bangkok, Thailand"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                    <label className="text-sm font-medium">Duration</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        id="durationDays"
                         type="number"
                         min="0"
                         value={formData.durationDays}
-                        onChange={(event) => setFormData({ ...formData, durationDays: event.target.value })}
+                        onChange={(e) => setFormData({ ...formData, durationDays: e.target.value })}
                         placeholder="Days"
-                        className={nightsExceedDays ? "border-destructive" : undefined}
                       />
                       <Input
-                        id="durationNights"
                         type="number"
                         min="0"
                         max={formData.durationDays || undefined}
                         value={formData.durationNights}
-                        onChange={(event) => setFormData({ ...formData, durationNights: event.target.value })}
+                        onChange={(e) => setFormData({ ...formData, durationNights: e.target.value })}
                         placeholder="Nights"
-                        className={nightsExceedDays ? "border-destructive" : undefined}
                       />
                     </div>
-                    <p className={nightsExceedDays ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>
-                      Nights must not exceed days.
-                    </p>
-                  </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <label htmlFor="basePrice" className="text-sm font-medium">Base Price (THB)</label>
-                        <Input
-                          id="basePrice"
-                          type="number"
-                          min="0"
-                          value={formData.basePrice}
-                          onChange={(event) => setFormData({ ...formData, basePrice: event.target.value })}
-                          placeholder="2500"
-                          required
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <label htmlFor="maxPax" className="text-sm font-medium">Max Pax</label>
-                        <Input
-                          id="maxPax"
-                          type="number"
-                          min="1"
-                          value={formData.maxPax}
-                          onChange={(event) => setFormData({ ...formData, maxPax: event.target.value })}
-                          placeholder="20"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <label htmlFor="status" className="text-sm font-medium">Status</label>
-                        <select
-                          id="status"
-                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          value={formData.status}
-                          onChange={(event) => setFormData({ ...formData, status: event.target.value })}
-                        >
-                          <option value="draft">Draft</option>
-                          <option value="published">Published</option>
-                          <option value="archived">Archived</option>
-                        </select>
-                      </div>
-                      <div className="grid gap-2">
-                        <label htmlFor="category" className="text-sm font-medium">Category</label>
-                        <select
-                          id="category"
-                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                          value={formData.category}
-                          onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-                        >
-                          <option value="Adventure">Adventure</option>
-                          <option value="Cultural">Cultural</option>
-                          <option value="Relaxation">Relaxation</option>
-                          <option value="City">City</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <label htmlFor="highlights" className="text-sm font-medium">Highlights</label>
-                      <Input
-                        id="highlights"
-                        value={formData.highlights}
-                        onChange={(event) => setFormData({ ...formData, highlights: event.target.value })}
-                        placeholder="Temple visit, Local guide, Lunch included"
-                      />
-                    </div>
-                  </div>
+                    {nightsExceedDays && (
+                      <p className="text-xs text-red-500 mt-1">Nights must not exceed days.</p>
+                    )}
+                  </FormField>
                 </div>
-              )}
 
-              {activeTab === "images" && (
-                <div className="rounded-xl border border-input bg-background shadow-sm">
-                  <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Product Images</h2>
-                    <div className="text-xs text-muted-foreground">Max 6</div>
-                  </div>
-                  <div className="border-t border-input px-4 py-5">
-                    <PackageImagesUploader
-                      value={formData.imageUrls}
-                      action={(next) => setFormData({ ...formData, imageUrls: next })}
-                      storagePathPrefix={`packages/${packageId}`}
-                      maxImages={6}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField label="Base Price (THB)" required>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.basePrice}
+                      onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
+                      placeholder="2500"
                     />
-                    <div className="mt-3 text-xs text-muted-foreground">
-                      รูปแรกจะถูกใช้เป็น cover image ของแพ็กเกจ
-                    </div>
-                  </div>
-                </div>
-              )}
+                  </FormField>
 
-              {activeTab === "options" && (
-                <div className="rounded-xl border border-input bg-background shadow-sm">
-                  <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Product Options</h2>
-                  </div>
-                  <div className="border-t border-input px-4 py-5">
-                    <PackageOptionsEditor value={packageOptions} onChange={setPackageOptions} showHeading={false} />
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "itinerary" && (
-                <div className="rounded-xl border border-input bg-background shadow-sm">
-                  <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">Product Itinerary</h2>
-                  </div>
-                  <div className="border-t border-input px-4 py-5">
-                    <ItineraryEditor value={itineraryItems} onChange={setItineraryItems} />
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "trips" && (
-                <div className="rounded-xl border border-input bg-background shadow-sm">
-                  <div className="flex w-full items-center justify-between px-4 py-3 text-left">
-                    <h2 className="text-base font-semibold text-foreground">
-                      Trip Schedule{formData.name ? ` - ${formData.name}` : ""}
-                    </h2>
-                  </div>
-                  <div className="border-t border-input px-4 py-5">
-                    <TripScheduleEditor
-                      packageId={packageId}
-                      onDatesChange={setTripDates}
+                  <FormField label="Max Pax" required>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={formData.maxPax}
+                      onChange={(e) => setFormData({ ...formData, maxPax: e.target.value })}
+                      placeholder="20"
                     />
-                  </div>
+                  </FormField>
                 </div>
-              )}
-            </div>
 
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField label="Status">
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="archived">Archived</option>
+                    </select>
+                  </FormField>
+
+                  <FormField label="Category">
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="Adventure">Adventure</option>
+                      <option value="Cultural">Cultural</option>
+                      <option value="Relaxation">Relaxation</option>
+                      <option value="City">City</option>
+                      <option value="Nature">Nature</option>
+                      <option value="Luxury">Luxury</option>
+                    </select>
+                  </FormField>
+                </div>
+
+                <FormField label="Highlights">
+                  <Input
+                    value={formData.highlights}
+                    onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
+                    placeholder="Canal Cruise, Floating Market, Temple Visit"
+                  />
+                </FormField>
+              </div>
+            </FormCard>
+          </div>
+        )}
+
+        {/* TAB: Images */}
+        {activeTab === "images" && (
+          <div className="max-w-3xl">
+            <FormCard title="Product Images">
+              <div className="space-y-4">
+                <PackageImagesUploader
+                  value={formData.imageUrls}
+                  action={(next) => setFormData({ ...formData, imageUrls: next })}
+                  storagePathPrefix={`packages/${packageId}`}
+                  maxImages={6}
+                />
+                <p className="text-sm text-gray-500">First image will be used as cover image.</p>
+              </div>
+            </FormCard>
+          </div>
+        )}
+
+        {/* TAB: Options */}
+        {activeTab === "options" && (
+          <div className="max-w-3xl">
+            <FormCard title="Pricing Options">
+              <PackageOptionsEditor value={packageOptions} onChange={setPackageOptions} />
+            </FormCard>
+          </div>
+        )}
+
+        {/* TAB: Itinerary */}
+        {activeTab === "itinerary" && (
+          <div className="max-w-3xl">
+            <FormCard title="Daily Itinerary">
+              <ItineraryEditor value={itineraryItems} onChange={setItineraryItems} />
+            </FormCard>
+          </div>
+        )}
+
+        {/* TAB: Trips */}
+        {activeTab === "trips" && (
+          <div className="max-w-3xl">
+            <FormCard title="Trip Schedule">
+              <TripScheduleEditor packageId={packageId} onDatesChange={setTripDates} />
+            </FormCard>
+          </div>
+        )}
+      </ProductBackofficeLayout>
+    </form>
   );
 }
