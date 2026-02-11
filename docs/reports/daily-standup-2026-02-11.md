@@ -1,0 +1,135 @@
+# Daily Standup Report
+
+**Date:** 11 Feb 2026 (Wednesday)  
+**Sprint:** Phase 4 - API Integration  
+**Reported by:** Sisyphus Agent
+
+---
+
+## 📋 Summary
+
+สร้าง API Layer ครบทุก module และ refactor Dashboard CRM ให้ใช้ service layer แทน raw Supabase queries พร้อมแก้ไข bugs และปรับ UI ตาม feedback
+
+---
+
+## ✅ Done (Completed)
+
+### 1. API Layer Foundation
+- [x] สร้าง `types/database.ts` — TypeScript types สำหรับ 7 tables (Row, Insert, Update, Joined types)
+- [x] สร้าง `lib/supabase/customers.ts` — CRUD service functions
+- [x] สร้าง `lib/supabase/packages.ts` — CRUD + itinerary management
+- [x] สร้าง `lib/supabase/trips.ts` — CRUD service
+- [x] สร้าง `lib/supabase/bookings.ts` — CRUD + booking ref generator
+- [x] สร้าง `lib/supabase/payments.ts` — CRUD + auto-sync payment_status
+- [x] สร้าง `lib/supabase/dashboard.ts` — Aggregate stats service
+- [x] สร้าง `app/api/bookings/route.ts` — POST create booking endpoint
+- [x] สร้าง `app/api/bookings/[id]/status/route.ts` — PATCH status workflow
+- [x] สร้าง `app/api/payments/route.ts` — POST record payment endpoint
+- [x] สร้าง `app/api/dashboard/stats/route.ts` — GET dashboard stats
+
+### 2. Dashboard CRM Refactor
+- [x] Refactor `/dashboard` → ใช้ `getDashboardStats`, `getRecentBookings`, `getUpcomingTrips`
+- [x] Refactor `/customers` → ใช้ `getCustomers`, `deleteCustomer`
+- [x] Refactor `/packages` → ใช้ `getPackages`, `deletePackage`
+- [x] Refactor `/bookings` → ใช้ `getBookings`
+- [x] Refactor `/payments` → ใช้ `getPayments`
+- [x] Refactor `/customers/[id]` → ใช้ `getCustomerById`, `getCustomerBookings`
+- [x] Refactor `/bookings/[id]` → ใช้ `getBookingById`, `updateBookingStatus`
+- [x] Refactor `/packages/[id]` → ใช้ `getPackageById` (fix `any` type → `PackageWithItinerary`)
+- [x] Refactor `/packages/create` → ใช้ `createPackage`, `upsertPackageItinerary`
+- [x] Refactor `/packages/[id]/edit` → ใช้ service layer functions
+
+### 3. Bug Fixes
+- [x] Fix `/trips` page: `searchParams` Promise issue (ใช้ `React.use()`)
+- [x] Fix Dashboard: Remove 'active' from trip status filter (DB enum ไม่มี)
+
+### 4. UI Changes
+- [x] Rename "Package" → "Product" ทุกจุดที่ user เห็น (Sidebar, Pages, Labels)
+
+---
+
+## 🔄 In Progress
+
+- [ ] ~สร้าง ProductBackofficeLayout (Klook-style)~ → **Reverted** (user feedback: ไม่สวย)
+
+---
+
+## ⏭️ Next / Tomorrow
+
+### Option A: Auth Integration
+- [ ] Connect Login/Register → Supabase Auth
+- [ ] Create middleware for route protection
+- [ ] Link `customers.auth_user_id` to auth.users
+
+### Option B: Public Site Connection
+- [ ] Connect Landing page to real packages data
+- [ ] Connect Package detail to real data
+- [ ] Cart/Checkout flow with real booking creation
+
+### Option C: Seed Data
+- [ ] Create seed script for sample data
+- [ ] Populate DB with realistic test data
+
+---
+
+## 🐛 Blockers / Issues
+
+| Issue | Status | Resolution |
+|-------|--------|------------|
+| `trip_status` enum ไม่มี 'active' | ✅ Resolved | เปลี่ยน filter เป็น 'scheduled' |
+| `searchParams` Promise in Next.js 15 | ✅ Resolved | ใช้ `React.use()` unwrap |
+
+---
+
+## 📊 Metrics
+
+| Metric | Value |
+|--------|-------|
+| Files Created | 11 files |
+| Files Modified | 10+ files |
+| Lines Added | ~3,500 lines |
+| Build Status | ✅ Pass |
+| Type Errors | 0 |
+
+---
+
+## 💬 Notes
+
+- **Service Layer Pattern:** ใช้ `{ data, error }` pattern สำหรับทุก function
+- **Type Safety:** แก้ `any` types เป็น proper types ทั้งหมด
+- **Backward Compatibility:** เก็บ logic เดิมทั้งหมดไว้ แค่ย้ายมาเรียกผ่าน service
+- **UI Decision:** User ไม่ชอบ Klook-style layout → Revert กลับเป็น layout เดิม
+
+---
+
+## 🔗 Git Commits
+
+```
+74ab304 feat: add API layer — Supabase service layer + API routes
+5d39a13 refactor: use service layer for all Dashboard CRM pages
+c2c6486 fix: trips page searchParams Promise + remove invalid 'active' status
+c1b4219 ui: rename Package menu to Product
+fe6f51c feat: add Product Backoffice Layout (Klook-style admin)
+5e9e544 feat: merge Klook-style layout into Product Edit page
+1a0048a revert: restore original Product Edit page layout
+```
+
+---
+
+## 🎯 Sprint Progress
+
+```
+Phase 4: Build
+├── ✅ Project Setup (Sprint 1)
+├── ✅ Dashboard UI (Sprint 2)
+├── ✅ Customers UI (Sprint 3)
+├── ✅ Products UI (Sprint 4)
+├── ✅ API Layer (Today)
+├── 🔄 Auth Integration (Next)
+└── ⏭️ Public Site Integration (Pending)
+```
+
+---
+
+*Report generated by Sisyphus Agent*  
+*Build: ✅ Pass | Tests: N/A | Ready for Review: Yes*
