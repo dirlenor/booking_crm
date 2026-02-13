@@ -12,9 +12,10 @@ import { cn } from "@/lib/utils";
 interface CustomerRowProps {
   customer: Customer;
   onDelete: (customerId: string) => void;
+  canDelete?: boolean;
 }
 
-export function CustomerRow({ customer, onDelete }: CustomerRowProps) {
+export function CustomerRow({ customer, onDelete, canDelete = true }: CustomerRowProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('th-TH', {
       style: 'currency',
@@ -82,15 +83,17 @@ export function CustomerRow({ customer, onDelete }: CustomerRowProps) {
               <Edit className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => onDelete(customer.id)}
-            aria-label="Delete customer"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {canDelete ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              onClick={() => onDelete(customer.id)}
+              aria-label="Delete customer"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
       </TableCell>
     </TableRow>

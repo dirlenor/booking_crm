@@ -41,6 +41,12 @@ export default function CartPage() {
     updateItems(items.filter((item) => item.id !== id));
   };
 
+  const getMinPax = (item: LocalCartItem) => Math.max(1, Number(item.minPax ?? 1) || 1);
+  const getMaxPax = (item: LocalCartItem) => {
+    const parsed = Number(item.maxPax ?? 0);
+    return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+  };
+
   const summary = useMemo(() => {
     const totalGuests = items.reduce((sum, item) => sum + item.pax, 0);
     const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -114,6 +120,11 @@ export default function CartPage() {
                           <Badge variant="outline" className="border-gray-200 text-gray-600">
                             Trip ID: {item.tripId}
                           </Badge>
+                          {item.passengers ? (
+                            <Badge variant="outline" className="border-gray-200 text-gray-600">
+                              Travelers: A {item.passengers.adult} / C {item.passengers.child} / I {item.passengers.infant}
+                            </Badge>
+                          ) : null}
                         </div>
 
                         <div className="mb-4 grid gap-1 text-xs text-gray-500" data-section={`cart_item_meta_${item.id.toLowerCase()}`}>
@@ -128,6 +139,7 @@ export default function CartPage() {
                             <button
                               className="w-8 h-8 rounded-md bg-white border border-gray-100 flex items-center justify-center text-gray-600"
                               onClick={() => decreasePax(item.id)}
+                              disabled={item.pax <= getMinPax(item)}
                             >
                               <Minus className="w-4 h-4" />
                             </button>
@@ -135,6 +147,7 @@ export default function CartPage() {
                             <button
                               className="w-8 h-8 rounded-md bg-white border border-gray-100 flex items-center justify-center text-gray-600"
                               onClick={() => increasePax(item.id)}
+                              disabled={getMaxPax(item) !== null && item.pax >= (getMaxPax(item) ?? item.pax)}
                             >
                               <Plus className="w-4 h-4" />
                             </button>

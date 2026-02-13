@@ -31,42 +31,30 @@ export function BestPriceOffer() {
   return (
     <section className="py-20 bg-gray-50" data-section="how_it_work_section">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div data-section="how_it_work_content_left">
-            <span className="text-accent font-bold uppercase tracking-wide text-sm">How It Works</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2 mb-6">
-              Book in 4 Easy Steps
-            </h2>
-            <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              Follow this simple flow to complete your booking journey from selection to payment.
-            </p>
+        <span className="text-accent font-bold uppercase tracking-wide text-sm">How It Works</span>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2 mb-6">
+          Book in 4 Easy Steps
+        </h2>
+        <p className="text-gray-500 text-lg leading-relaxed mb-8 max-w-3xl">
+          Follow this simple flow to complete your booking journey from selection to payment.
+        </p>
 
-            <ul className="mt-6 grid gap-4 md:grid-cols-2" data-section="how_it_work_steps">
-              {steps.map((step) => (
-                <li key={step.id} className="rounded-xl bg-white p-4 shadow-sm" data-section={`how_it_work_step_${step.id}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <step.icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Step {step.id}</p>
-                      <h3 className="text-base font-bold text-gray-900">{step.title}</h3>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm text-gray-600">{step.description}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-3xl border border-gray-200 bg-white p-3 shadow-sm" data-section="how_it_work_image_right">
-            <img
-              src="/images/how-it-work.png"
-              alt="How it works illustration"
-              className="w-full rounded-2xl object-contain"
-            />
-          </div>
-        </div>
+        <ul className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-section="how_it_work_steps">
+          {steps.map((step) => (
+            <li key={step.id} className="rounded-xl bg-white p-4 shadow-sm" data-section={`how_it_work_step_${step.id}`}>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <step.icon className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">Step {step.id}</p>
+                  <h3 className="text-base font-bold text-gray-900">{step.title}</h3>
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-gray-600">{step.description}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

@@ -49,7 +49,7 @@ export function HeroSection() {
                   placeholder="Search attractions (e.g. Universal Studios Japan)"
                   className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-600"
                 />
-                <Button onClick={onSearch} className="h-8 rounded-lg bg-primary px-4 text-sm font-bold text-white hover:bg-primary/90">
+                <Button onClick={onSearch} className="h-8 rounded-lg bg-primary px-4 text-sm font-bold text-white">
                   Search
                 </Button>
               </div>

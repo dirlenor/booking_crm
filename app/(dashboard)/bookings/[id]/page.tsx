@@ -6,8 +6,8 @@ import { BookingDetailView } from "@/components/features/bookings/booking-detail
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getBookingById, updateBookingStatus } from "@/lib/supabase/bookings";
-import { supabase } from "@/lib/supabase/client";
+import { getBookingById, updateBooking, updateBookingStatus } from "@/lib/supabase/bookings";
+import { getPaymentsByBooking, updatePayment } from "@/lib/supabase/payments";
 import type { Booking, BookingPayment, BookingPassenger } from "@/lib/mock-data/bookings";
 import type { BookingDetail } from "@/types/database";
 import { BookingEditModal } from "@/components/features/bookings/booking-edit-modal";
@@ -148,19 +148,20 @@ export default function BookingDetailPage() {
     if (!confirm("Are you sure you want to mark this booking as Refunded? This will update the booking status and all related payments.")) return;
 
     try {
-      const { error: bookingError } = await supabase
-        .from("bookings")
-        .update({ payment_status: "refunded" })
-        .eq("id", booking.id);
+      const paymentsRes = await getPaymentsByBooking(booking.id);
+      if (paymentsRes.error) throw new Error(paymentsRes.error);
 
-      if (bookingError) throw bookingError;
+      if ((paymentsRes.data?.length ?? 0) > 0) {
+        const updateResults = await Promise.all(
+          paymentsRes.data!.map((payment) => updatePayment(payment.id, { status: "refunded" }))
+        );
 
-      const { error: paymentsError } = await supabase
-        .from("payments")
-        .update({ status: "refunded" })
-        .eq("booking_id", booking.id);
+        const failedPayment = updateResults.find((result) => result.error);
+        if (failedPayment?.error) throw new Error(failedPayment.error);
+      }
 
-      if (paymentsError) throw paymentsError;
+      const bookingRes = await updateBooking(booking.id, { payment_status: "refunded" });
+      if (bookingRes.error) throw new Error(bookingRes.error);
 
       loadBooking();
       router.refresh();

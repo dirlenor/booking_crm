@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Sidebar } from "@/components/features/dashboard/sidebar"
+import { DashboardAccessGuard } from "@/components/auth/dashboard-access-guard"
 
 export const metadata: Metadata = {
   title: "Dashboard | 6CAT Booking CRM",
@@ -12,13 +13,15 @@ export default function DashboardLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-      <main className="pl-0 md:pl-64 transition-[padding]">
-        <div className="w-full p-6 md:p-8 lg:p-10">
-          {children}
-        </div>
-      </main>
-    </div>
+    <DashboardAccessGuard>
+      <div className="min-h-screen bg-background">
+        <Sidebar />
+        <main className="pl-0 md:pl-64 transition-[padding]">
+          <div className="w-full p-6 md:p-8 lg:p-10">
+            {children}
+          </div>
+        </main>
+      </div>
+    </DashboardAccessGuard>
   )
 }

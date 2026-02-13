@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, Star, Filter, ChevronDown } from 'lucide-react';
+import { Search, Star, Filter, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase/client';
@@ -10,108 +10,6 @@ import {
   PopularPackageCard,
   type PopularPackage,
 } from '@/components/features/landing/popular-package-card';
-
-const DESTINATIONS = [
-  {
-    id: 1,
-    title: "Kyoto Temple Walk & Tea Ceremony",
-    location: "Kyoto, Japan",
-    price: 120,
-    rating: 4.8,
-    reviews: 124,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80",
-    tags: ["Cultural", "Walking"]
-  },
-  {
-    id: 2,
-    title: "Santorini Sunset Cruise & Wine",
-    location: "Santorini, Greece",
-    price: 180,
-    rating: 4.9,
-    reviews: 89,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1613395877344-13d4c2ce5d4d?w=800&q=80",
-    tags: ["Cruise", "Romantic"]
-  },
-  {
-    id: 3,
-    title: "Machu Picchu Inca Trail Trek",
-    location: "Cusco, Peru",
-    price: 650,
-    rating: 4.7,
-    reviews: 215,
-    days: 4,
-    image: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=800&q=80",
-    tags: ["Adventure", "Hiking"]
-  },
-  {
-    id: 4,
-    title: "Amalfi Coast Private Boat Tour",
-    location: "Amalfi, Italy",
-    price: 450,
-    rating: 5.0,
-    reviews: 56,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&q=80",
-    tags: ["Luxury", "Boat"]
-  },
-  {
-    id: 5,
-    title: "Safari Adventure in Serengeti",
-    location: "Serengeti, Tanzania",
-    price: 1200,
-    rating: 4.9,
-    reviews: 142,
-    days: 5,
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
-    tags: ["Wildlife", "Safari"]
-  },
-  {
-    id: 6,
-    title: "Swiss Alps Ski Experience",
-    location: "Zermatt, Switzerland",
-    price: 900,
-    rating: 4.6,
-    reviews: 78,
-    days: 3,
-    image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&q=80",
-    tags: ["Winter", "Skiing"]
-  },
-  {
-    id: 7,
-    title: "Bali Temple & Rice Terrace",
-    location: "Bali, Indonesia",
-    price: 80,
-    rating: 4.5,
-    reviews: 320,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
-    tags: ["Nature", "Culture"]
-  },
-  {
-    id: 8,
-    title: "Northern Lights Hunt",
-    location: "Tromsø, Norway",
-    price: 250,
-    rating: 4.7,
-    reviews: 95,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80",
-    tags: ["Adventure", "Winter"]
-  },
-  {
-    id: 9,
-    title: "Grand Canyon Helicopter Tour",
-    location: "Arizona, USA",
-    price: 350,
-    rating: 4.8,
-    reviews: 180,
-    days: 1,
-    image: "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=800&q=80",
-    tags: ["Sightseeing", "Adventure"]
-  }
-];
 
 type DestinationItem = {
   id: string;
@@ -125,14 +23,28 @@ type DestinationItem = {
   tags: string[];
 };
 
-const FilterCheckbox = ({ label, count }: { label: string; count?: number }) => (
-  <label className="flex items-center gap-3 cursor-pointer group">
-    <div className="w-4 h-4 border rounded border-gray-300 group-hover:border-primary flex items-center justify-center transition-colors">
-      
+const FilterCheckbox = ({
+  label,
+  count,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  count?: number;
+  checked: boolean;
+  onToggle: () => void;
+}) => (
+  <button type="button" onClick={onToggle} className="w-full flex items-center gap-3 cursor-pointer group text-left">
+    <div
+      className={`w-4 h-4 border rounded flex items-center justify-center transition-colors ${
+        checked ? 'border-primary bg-primary text-white' : 'border-gray-300 group-hover:border-primary'
+      }`}
+    >
+      {checked ? <Check className="w-3 h-3" /> : null}
     </div>
     <span className="text-sm text-gray-600 group-hover:text-gray-900">{label}</span>
-    {count !== undefined && <span className="ml-auto text-xs text-gray-400">({count})</span>}
-  </label>
+    {count !== undefined ? <span className="ml-auto text-xs text-gray-400">({count})</span> : null}
+  </button>
 );
 
 const PriceRange = () => (
@@ -169,6 +81,8 @@ export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<DestinationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [selectedTourTypes, setSelectedTourTypes] = useState<string[]>([]);
 
   useEffect(() => {
     const loadDestinations = async () => {
@@ -177,7 +91,7 @@ export default function DestinationsPage() {
 
       const { data, error } = await supabase
         .from('packages')
-        .select('id, name, destination, duration, base_price, image_url, image_urls, category, status')
+        .select('id, name, destination, duration, base_price, image_url, image_urls, category, status, options')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
@@ -189,6 +103,16 @@ export default function DestinationsPage() {
 
       const mapped: DestinationItem[] =
         data?.map((pkg) => {
+          const options = Array.isArray(pkg.options) ? pkg.options : [];
+          const meta = options.find((item) => {
+            if (!item || typeof item !== 'object') return false;
+            const value = item as { id?: unknown; name?: unknown };
+            return value.id === '__meta__' || value.name === '__meta__';
+          }) as { meta?: { rating?: number; reviews_count?: number; badge_text?: string } } | undefined;
+          const tourType =
+            typeof meta?.meta?.badge_text === 'string' && meta.meta.badge_text.trim().length > 0
+              ? meta.meta.badge_text.trim()
+              : pkg.category ?? 'Cultural';
           const daysMatch = pkg.duration?.match(/(\d+)\s*Day/i);
           const days = daysMatch ? Number(daysMatch[1]) : 1;
           return {
@@ -196,14 +120,14 @@ export default function DestinationsPage() {
             title: pkg.name,
             location: pkg.destination ?? 'Thailand',
             price: Number(pkg.base_price ?? 0),
-            rating: 4.7,
-            reviews: 120,
+            rating: Number(meta?.meta?.rating ?? 4.7),
+            reviews: Number(meta?.meta?.reviews_count ?? 0),
             days,
             image:
               (Array.isArray(pkg.image_urls) && pkg.image_urls.length > 0 ? pkg.image_urls[0] : null) ||
               pkg.image_url ||
               'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80',
-            tags: [pkg.category ?? 'Cultural'],
+            tags: [tourType],
           };
         }) ?? [];
 
@@ -214,12 +138,36 @@ export default function DestinationsPage() {
     loadDestinations();
   }, []);
 
+  const tourTypeCounts = useMemo(() => {
+    const counter = new Map<string, number>();
+    destinations.forEach((item) => {
+      const type = item.tags[0]?.trim();
+      if (!type) return;
+      counter.set(type, (counter.get(type) ?? 0) + 1);
+    });
+    return [...counter.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([label, count]) => ({ label, count }));
+  }, [destinations]);
+
+  const filteredDestinations = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    return destinations.filter((item) => {
+      const type = item.tags[0] ?? '';
+      const matchType = selectedTourTypes.length === 0 || selectedTourTypes.includes(type);
+      const matchKeyword =
+        keyword.length === 0 ||
+        item.title.toLowerCase().includes(keyword) ||
+        item.location.toLowerCase().includes(keyword);
+      return matchType && matchKeyword;
+    });
+  }, [destinations, searchKeyword, selectedTourTypes]);
+
   const dataToRender = useMemo(() => {
     if (loading) return [];
-    if (destinations.length > 0) return destinations;
-    if (error) return [];
-    return DESTINATIONS.map((item) => ({ ...item, id: String(item.id) }));
-  }, [destinations, error, loading]);
+      if (filteredDestinations.length > 0) return filteredDestinations;
+      return [];
+  }, [filteredDestinations, loading]);
 
   const packagesToRender = useMemo<PopularPackage[]>(() => {
     const priceFormatter = new Intl.NumberFormat('en-US', {
@@ -259,21 +207,15 @@ export default function DestinationsPage() {
 
   return (
     <div className="bg-neutral-50 min-h-screen pb-20">
-      <div className="relative h-[300px] md:h-[400px] w-full bg-primary overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-60"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&q=80)' }}
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent"></div>
-        
-        <div className="container mx-auto px-4 h-full flex flex-col justify-end pb-12 relative z-10">
-          <div className="flex items-center gap-2 text-white/70 text-sm mb-4">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+      <div className="w-full border-b border-gray-200 bg-white">
+        <div className="container mx-auto px-4 py-10 md:py-12">
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <Link href="/" className="hover:text-primary transition-colors">Home</Link>
             <span>/</span>
-            <span className="text-white">Destinations</span>
+            <span className="text-gray-900 font-medium">Destinations</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">Explore the World</h1>
-          <p className="text-lg text-white/80 max-w-2xl">Discover unforgettable tours and adventures in the world's most breathtaking locations.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Explore the World</h1>
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl">Discover unforgettable tours and adventures in the world's most breathtaking locations.</p>
         </div>
       </div>
 
@@ -287,22 +229,50 @@ export default function DestinationsPage() {
                   <Filter className="w-5 h-5 text-primary" />
                   Filters
                 </h2>
-                <button className="text-sm text-primary hover:underline">Reset All</button>
+                <button
+                  type="button"
+                  className="text-sm text-primary hover:underline"
+                  onClick={() => {
+                    setSelectedTourTypes([]);
+                    setSearchKeyword('');
+                  }}
+                >
+                  Reset All
+                </button>
               </div>
 
               <div className="mb-6">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input placeholder="Search destination..." className="pl-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors" />
+                  <Input
+                    placeholder="Search destination..."
+                    className="pl-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                  />
                 </div>
               </div>
 
               <FilterSection title="Tour Type">
-                <FilterCheckbox label="Adventure" count={12} />
-                <FilterCheckbox label="City Tours" count={24} />
-                <FilterCheckbox label="Cultural" count={8} />
-                <FilterCheckbox label="Beaches" count={15} />
-                <FilterCheckbox label="Cruises" count={5} />
+                {tourTypeCounts.length === 0 ? (
+                  <p className="text-sm text-gray-500">No categories available.</p>
+                ) : (
+                  tourTypeCounts.map((item) => (
+                    <FilterCheckbox
+                      key={item.label}
+                      label={item.label}
+                      count={item.count}
+                      checked={selectedTourTypes.includes(item.label)}
+                      onToggle={() => {
+                        setSelectedTourTypes((prev) =>
+                          prev.includes(item.label)
+                            ? prev.filter((name) => name !== item.label)
+                            : [...prev, item.label]
+                        );
+                      }}
+                    />
+                  ))
+                )}
               </FilterSection>
 
               <FilterSection title="Price Range">
@@ -310,11 +280,11 @@ export default function DestinationsPage() {
               </FilterSection>
 
               <FilterSection title="Popular Destinations">
-                <FilterCheckbox label="Japan" count={6} />
-                <FilterCheckbox label="Italy" count={4} />
-                <FilterCheckbox label="Thailand" count={8} />
-                <FilterCheckbox label="France" count={3} />
-                <FilterCheckbox label="USA" count={10} />
+                <FilterCheckbox label="Japan" count={6} checked={false} onToggle={() => {}} />
+                <FilterCheckbox label="Italy" count={4} checked={false} onToggle={() => {}} />
+                <FilterCheckbox label="Thailand" count={8} checked={false} onToggle={() => {}} />
+                <FilterCheckbox label="France" count={3} checked={false} onToggle={() => {}} />
+                <FilterCheckbox label="USA" count={10} checked={false} onToggle={() => {}} />
               </FilterSection>
 
               <FilterSection title="Rating">
@@ -344,7 +314,9 @@ export default function DestinationsPage() {
 
           <main className="flex-1">
             <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">Showing <span className="font-semibold text-gray-900">9</span> of <span className="font-semibold text-gray-900">24</span> destinations</p>
+              <p className="text-gray-600">
+                Showing <span className="font-semibold text-gray-900">{packagesToRender.length}</span> destination(s)
+              </p>
               
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 hidden sm:inline">Sort by:</span>

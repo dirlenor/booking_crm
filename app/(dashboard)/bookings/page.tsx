@@ -90,7 +90,7 @@ export default function BookingsPage() {
         return;
       }
 
-      setBookings(res.data.map(mapBookingToUI));
+      setBookings((res.data?.items ?? []).map(mapBookingToUI));
       setLoading(false);
     };
 

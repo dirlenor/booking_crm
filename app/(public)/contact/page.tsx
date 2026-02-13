@@ -14,7 +14,7 @@ export default function ContactPage() {
             <span className="inline-block rounded-full bg-primary/10 px-4 py-1 text-xs font-bold uppercase tracking-wider text-primary">
               Support Center
             </span>
-            <h1 className="mt-4 text-4xl font-black leading-tight tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+            <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
               Get in Touch with Our Experts
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-gray-500">

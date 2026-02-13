@@ -6,10 +6,16 @@ import { Button } from "@/components/ui/button";
 import { CustomerSearch } from "@/components/features/customers/customer-search";
 import { CustomerTable } from "@/components/features/customers/customer-table";
 import { CustomerFormModal } from "@/components/features/customers/customer-form-modal";
-import { getCustomers, deleteCustomer as deleteCustomerService } from "@/lib/supabase/customers";
+import { supabase } from "@/lib/supabase/client";
+import { getBackofficeRole } from "@/lib/auth/roles";
+import {
+  getCustomers,
+  getCustomerBookings,
+  deleteCustomer as deleteCustomerService,
+} from "@/lib/supabase/customers";
+import { getBookings } from "@/lib/supabase/bookings";
 import type { Customer } from "@/lib/mock-data/customers";
 import type { CustomerRow } from "@/types/database";
-import { supabase } from "@/lib/supabase/client";
 
 function mapCustomerToUI(row: CustomerRow, bookingStats: { count: number; total: number; lastDate?: string }): Customer {
   const initials = row.name
@@ -39,14 +45,31 @@ export default function CustomersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [canDeleteCustomer, setCanDeleteCustomer] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadRole = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!mounted) return;
+      setCanDeleteCustomer(getBackofficeRole(data.user ?? null) === "admin");
+    };
+
+    void loadRole();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const loadCustomers = async () => {
     setLoading(true);
     setError(null);
 
-    const [customersRes, { data: bookingRows }] = await Promise.all([
+    const [customersRes, bookingsRes] = await Promise.all([
       getCustomers({ limit: 1000 }),
-      supabase.from("bookings").select("customer_id, total_amount, booking_date"),
+      getBookings({ limit: 1000 }),
     ]);
 
     if (customersRes.error) {
@@ -55,8 +78,17 @@ export default function CustomersPage() {
       return;
     }
 
+    if (bookingsRes.error) {
+      setError(bookingsRes.error);
+      setLoading(false);
+      return;
+    }
+
+    const bookingItems = bookingsRes.data?.items ?? [];
+    const customerItems = customersRes.data?.items ?? [];
+
     const stats = new Map<string, { count: number; total: number; lastDate?: string }>();
-    bookingRows?.forEach((booking) => {
+    bookingItems.forEach((booking) => {
       if (!booking.customer_id) return;
       const current = stats.get(booking.customer_id) ?? { count: 0, total: 0 };
       current.count += 1;
@@ -68,7 +100,7 @@ export default function CustomersPage() {
       stats.set(booking.customer_id, current);
     });
 
-    const mapped = customersRes.data.map((row) =>
+    const mapped = customerItems.map((row) =>
       mapCustomerToUI(row, stats.get(row.id) ?? { count: 0, total: 0 })
     );
 
@@ -81,18 +113,19 @@ export default function CustomersPage() {
   }, []);
 
   const handleDelete = async (customerId: string) => {
-    const { data: bookingRows, error: bookingError } = await supabase
-      .from("bookings")
-      .select("id", { count: "exact" })
-      .eq("customer_id", customerId)
-      .limit(1);
-
-    if (bookingError) {
-      alert(bookingError.message);
+    if (!canDeleteCustomer) {
+      alert("You don't have permission to delete customers.");
       return;
     }
 
-    if ((bookingRows?.length ?? 0) > 0) {
+    const bookingsRes = await getCustomerBookings(customerId);
+
+    if (bookingsRes.error) {
+      alert(bookingsRes.error);
+      return;
+    }
+
+    if ((bookingsRes.data?.length ?? 0) > 0) {
       alert("This customer has existing bookings and cannot be deleted.");
       return;
     }
@@ -113,8 +146,8 @@ export default function CustomersPage() {
   const content = useMemo(() => {
     if (loading) return <div className="text-sm text-muted-foreground">Loading customers...</div>;
     if (error) return <div className="text-sm text-destructive">{error}</div>;
-    return <CustomerTable customers={customers} onDelete={handleDelete} />;
-  }, [loading, error, customers]);
+    return <CustomerTable customers={customers} onDelete={handleDelete} canDelete={canDeleteCustomer} />;
+  }, [loading, error, customers, canDeleteCustomer]);
 
   return (
     <div className="flex flex-col gap-6 p-6">

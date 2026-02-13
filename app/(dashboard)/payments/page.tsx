@@ -42,7 +42,7 @@ export default function PaymentsPage() {
         return;
       }
 
-      setPayments(res.data.map(mapPaymentToUI));
+      setPayments((res.data?.items ?? []).map(mapPaymentToUI));
       setLoading(false);
     };
 

@@ -2,16 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Search, ChevronDown, LogOut, ShoppingCart } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { getLocalCartCount } from "@/lib/cart/local-cart";
+import brandLogo from "@/image/Primary_Logo_3-01 1.png";
 
 export function LandingHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pageMenuOpen, setPageMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -19,6 +23,9 @@ export function LandingHeader() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const menuRef = useRef<HTMLDivElement | null>(null);
   const pageMenuRef = useRef<HTMLDivElement | null>(null);
+  const authNext = pathname && pathname !== "/login" && pathname !== "/register" ? pathname : "/";
+  const loginHref = `/login?next=${encodeURIComponent(authNext)}`;
+  const registerHref = `/register?next=${encodeURIComponent(authNext)}`;
 
   useEffect(() => {
     let isMounted = true;
@@ -27,6 +34,7 @@ export function LandingHeader() {
       const { data } = await supabase.auth.getUser();
       if (!isMounted) return;
       setUser(data.user ?? null);
+      setAuthReady(true);
     };
 
     loadUser();
@@ -35,6 +43,7 @@ export function LandingHeader() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setAuthReady(true);
     });
 
     return () => {
@@ -114,9 +123,13 @@ export function LandingHeader() {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white">
       <div className="border-b border-gray-100">
         <div className="container mx-auto flex h-16 items-center gap-3 px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg bg-primary text-white flex items-center justify-center text-base font-black">6</div>
-            <span className="text-xl font-black tracking-tight text-primary md:text-2xl">6CATRIP</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src={brandLogo}
+              alt="NovaTrip logo"
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
 
           <form onSubmit={submitSearch} className="hidden md:flex max-w-xl flex-1 items-center rounded-full border border-gray-200 bg-gray-50 px-4 py-2" data-section="header_attraction_search">
@@ -148,7 +161,9 @@ export function LandingHeader() {
               ) : null}
             </Link>
 
-            {user ? (
+            {!authReady ? (
+              <div className="h-10 w-[140px] rounded-full bg-gray-100 animate-pulse" />
+            ) : user ? (
               <div ref={menuRef} className="relative">
                 <button
                   type="button"
@@ -181,10 +196,10 @@ export function LandingHeader() {
               </div>
             ) : (
               <>
-                <Link href="/register" className="hidden md:inline text-sm font-semibold text-gray-700 hover:text-primary">
+                <Link href={registerHref} className="hidden md:inline text-sm font-semibold text-gray-700 hover:text-primary">
                   Sign up
                 </Link>
-                <Link href="/login">
+                <Link href={loginHref}>
                   <Button className="h-10 rounded-full bg-primary px-5 text-white hover:bg-primary/90">Log in</Button>
                 </Link>
               </>
@@ -198,9 +213,8 @@ export function LandingHeader() {
           <div className="flex items-center gap-7">
             <Link href="/#home-top" className="hover:text-primary">Home</Link>
             <Link href="/destinations" className="hover:text-primary">Attrachtion</Link>
-            <Link href="/#featured-routes" className="hover:text-primary">Destination</Link>
-            <Link href="/#about-us-section" className="hover:text-primary">About Us</Link>
-            <Link href="/#contact-us-section" className="hover:text-primary">Contact Us</Link>
+            <Link href="/about" className="hover:text-primary">About Us</Link>
+            <Link href="/contact" className="hover:text-primary">Contact Us</Link>
           </div>
 
           <div ref={pageMenuRef} className="relative">
@@ -215,19 +229,18 @@ export function LandingHeader() {
 
             {pageMenuOpen ? (
               <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
-                {[
-                  { href: "/", label: "Home" },
-                  { href: "/destinations", label: "Destinations" },
-                  { href: "/about", label: "About Us" },
-                  { href: "/contact", label: "Contact Us" },
-                  { href: "/cart", label: "Cart" },
-                  { href: "/checkout", label: "Checkout" },
-                  { href: "/payment", label: "Payment" },
-                  { href: "/thank-you", label: "Thank You" },
-                  { href: "/profile", label: "Profile" },
-                  { href: "/login", label: "Login" },
-                  { href: "/register", label: "Register" },
-                ].map((item) => (
+                  {[
+                    { href: "/", label: "Home" },
+                    { href: "/about", label: "About Us" },
+                    { href: "/contact", label: "Contact Us" },
+                    { href: "/cart", label: "Cart" },
+                    { href: "/checkout", label: "Checkout" },
+                    { href: "/payment", label: "Payment" },
+                    { href: "/thank-you", label: "Thank You" },
+                    { href: "/profile", label: "Profile" },
+                    { href: loginHref, label: "Login" },
+                    { href: registerHref, label: "Register" },
+                  ].map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}

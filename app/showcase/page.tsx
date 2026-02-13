@@ -59,13 +59,13 @@ export default function ShowcasePage() {
               name="Primary"
               variable="--primary"
               className="bg-primary text-primary-foreground"
-              hex="#FF4B13"
+                hex="#4F46E5"
             />
             <ColorCard
               name="Accent"
               variable="--accent"
               className="bg-accent text-accent-foreground"
-              hex="#f97316"
+                hex="#4F46E5"
             />
             <ColorCard
               name="Secondary"

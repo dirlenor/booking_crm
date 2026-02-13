@@ -3,12 +3,17 @@
 import * as React from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { getSafeNextPath } from '@/lib/auth/redirect'
 import { Loader2 } from 'lucide-react'
 
 function CallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const code = searchParams.get('code')
+  const nextPath = React.useMemo(
+    () => getSafeNextPath(searchParams.get('next'), '/'),
+    [searchParams]
+  )
   const [error, setError] = React.useState<string | null>(null)
 
   React.useEffect(() => {
@@ -29,17 +34,17 @@ function CallbackContent() {
             return
           }
 
-          router.push('/dashboard')
+          router.replace(nextPath)
           router.refresh()
           return
         }
 
         const { data } = await supabase.auth.getSession()
         if (data.session) {
-          router.push('/dashboard')
+          router.replace(nextPath)
           router.refresh()
         } else {
-          router.push('/login')
+          router.replace(`/login?next=${encodeURIComponent(nextPath)}`)
         }
         return
       }
@@ -49,7 +54,7 @@ function CallbackContent() {
         if (error) {
           throw error
         }
-        router.push('/dashboard')
+        router.replace(nextPath)
         router.refresh()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to verify authentication')
@@ -57,7 +62,7 @@ function CallbackContent() {
     }
 
     handleCallback()
-  }, [code, router])
+  }, [code, nextPath, router])
 
   if (error) {
     return (
@@ -65,7 +70,7 @@ function CallbackContent() {
         <p className="text-destructive font-medium">Authentication Error</p>
         <p className="text-muted-foreground text-sm">{error}</p>
         <button 
-          onClick={() => router.push('/login')}
+          onClick={() => router.push(`/login?next=${encodeURIComponent(nextPath)}`)}
           className="text-primary hover:underline text-sm"
         >
           Back to Login

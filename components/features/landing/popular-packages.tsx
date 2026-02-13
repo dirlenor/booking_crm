@@ -1,56 +1,38 @@
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   PopularPackageCard,
   type PopularPackage,
 } from "@/components/features/landing/popular-package-card";
+import { getPackages } from "@/lib/supabase/packages";
 
-export function PopularPackages() {
-  const packages: PopularPackage[] = [
-    {
-      id: "bangkok-cultural-tour",
-      title: "Bangkok Cultural Tour",
-      location: "Bangkok, Thailand",
-      days: "3 Days 2 Nights",
-      rating: 4.8,
-      reviews: 124,
-      price: "THB 4,500",
-      image: "https://images.unsplash.com/photo-1563492065599-3520f775eeed?q=80&w=1000&auto=format&fit=crop",
-      tag: "Best Seller"
-    },
-    {
-      id: "phi-phi-island-adventure",
-      title: "Phi Phi Island Adventure",
-      location: "Phuket, Thailand",
-      days: "4 Days 3 Nights",
-      rating: 4.9,
-      reviews: 89,
-      price: "THB 8,200",
-      image: "https://images.unsplash.com/photo-1537956965359-7573183d1f57?q=80&w=1000&auto=format&fit=crop",
-      tag: "Popular"
-    },
-    {
-      id: "chiang-mai-temple-run",
-      title: "Chiang Mai Temple Run",
-      location: "Chiang Mai, Thailand",
-      days: "3 Days 2 Nights",
-      rating: 4.7,
-      reviews: 56,
-      price: "THB 3,900",
-      image: "https://images.unsplash.com/photo-1605723517503-3cadb5818a0c?q=80&w=1000&auto=format&fit=crop",
-      tag: "New"
-    },
-    {
-      id: "krabi-island-hopping",
-      title: "Krabi Island Hopping",
-      location: "Krabi, Thailand",
-      days: "5 Days 4 Nights",
-      rating: 4.9,
-      reviews: 210,
-      price: "THB 12,500",
-      image: "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?q=80&w=1000&auto=format&fit=crop",
-      tag: "Top Rated"
-    }
-  ];
+function mapDurationToDaysLabel(duration: string | null): string {
+  if (!duration) return "1 Day";
+  const match = duration.match(/(\d+)\s*day/i);
+  if (!match) return duration;
+  const days = Number(match[1]);
+  if (!Number.isFinite(days) || days < 1) return duration;
+  return days === 1 ? "1 Day" : `${days} Days`;
+}
+
+export async function PopularPackages() {
+  const packageRes = await getPackages({ status: "published", limit: 8 });
+  const formatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+  const packages: PopularPackage[] = (packageRes.data?.items ?? []).slice(0, 8).map((pkg) => ({
+    id: pkg.id,
+    title: pkg.name,
+    location: pkg.destination ?? "Thailand",
+    days: mapDurationToDaysLabel(pkg.duration),
+    rating: 4.8,
+    reviews: 100,
+    price: `THB ${formatter.format(Number(pkg.base_price ?? 0))}`,
+    image:
+      (Array.isArray(pkg.image_urls) && pkg.image_urls.length > 0 ? pkg.image_urls[0] : null) ||
+      pkg.image_url ||
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=80",
+    tag: pkg.category ?? "Popular",
+  }));
 
   return (
     <section className="py-20 bg-white">
@@ -62,12 +44,14 @@ export function PopularPackages() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {packages.map((pkg) => (
-            <PopularPackageCard key={pkg.id} pkg={pkg} />
+            <PopularPackageCard key={pkg.id} pkg={pkg} href={`/destinations/${pkg.id}`} showCta={false} />
           ))}
         </div>
         
         <div className="mt-10 flex justify-center">
-          <Button variant="outline" className="border-primary bg-transparent text-primary hover:bg-transparent hover:text-primary px-8">View All Tours</Button>
+          <Button variant="outline" className="border-primary bg-transparent text-primary hover:bg-transparent hover:text-primary px-8" asChild>
+            <Link href="/destinations">View All Tours</Link>
+          </Button>
         </div>
       </div>
     </section>

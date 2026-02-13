@@ -12,9 +12,10 @@ import { CustomerRow } from "./customer-row";
 interface CustomerTableProps {
   customers: Customer[];
   onDelete: (customerId: string) => void;
+  canDelete?: boolean;
 }
 
-export function CustomerTable({ customers, onDelete }: CustomerTableProps) {
+export function CustomerTable({ customers, onDelete, canDelete = true }: CustomerTableProps) {
   return (
     <Card>
       <CardContent className="p-0">
@@ -32,7 +33,7 @@ export function CustomerTable({ customers, onDelete }: CustomerTableProps) {
           </TableHeader>
           <TableBody>
             {customers.map((customer) => (
-              <CustomerRow key={customer.id} customer={customer} onDelete={onDelete} />
+              <CustomerRow key={customer.id} customer={customer} onDelete={onDelete} canDelete={canDelete} />
             ))}
           </TableBody>
         </Table>

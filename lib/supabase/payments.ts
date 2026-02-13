@@ -1,11 +1,12 @@
-import { supabase } from './client';
+import { supabase } from '@/lib/supabase/client';
 import type {
-  PaymentRow,
+  BookingRow,
+  PaginatedData,
   PaymentInsert,
+  PaymentRow,
   PaymentUpdate,
   PaymentWithBooking,
   ServiceResponse,
-  PaginatedResponse,
 } from '@/types/database';
 
 interface GetPaymentsParams {
@@ -19,9 +20,10 @@ interface GetPaymentsParams {
   limit?: number;
 }
 
+/** ดึงรายการ payment พร้อม relation และ pagination */
 export async function getPayments(
   params: GetPaymentsParams = {}
-): Promise<PaginatedResponse<PaymentWithBooking>> {
+): Promise<ServiceResponse<PaginatedData<PaymentWithBooking>>> {
   const { search, status, method, bookingId, dateFrom, dateTo, page = 1, limit = 20 } = params;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -33,7 +35,7 @@ export async function getPayments(
     .range(from, to);
 
   if (search) {
-    query = query.or(`note.ilike.%${search}%`);
+    query = query.or(`note.ilike.%${search}%,bookings.booking_ref.ilike.%${search}%`);
   }
   if (status) {
     query = query.eq('status', status);
@@ -52,20 +54,27 @@ export async function getPayments(
   }
 
   const { data, error, count } = await query;
+  if (error) {
+    return { data: null, error: error.message };
+  }
 
+  const total = count ?? 0;
   return {
-    data: (data as PaymentWithBooking[]) ?? [],
-    error: error?.message ?? null,
-    count: count ?? 0,
-    page,
-    limit,
-    totalPages: Math.ceil((count ?? 0) / limit),
+    data: {
+      items: (data as PaymentWithBooking[]) ?? [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    },
+    error: null,
   };
 }
 
-export async function getPaymentById(
-  id: string
-): Promise<ServiceResponse<PaymentWithBooking>> {
+/** ดึง payment รายเดียว */
+export async function getPaymentById(id: string): Promise<ServiceResponse<PaymentWithBooking>> {
   const { data, error } = await supabase
     .from('payments')
     .select('*, bookings(*, customers(*), trips(*, packages(*)))')
@@ -73,11 +82,12 @@ export async function getPaymentById(
     .single();
 
   return {
-    data: data as PaymentWithBooking | null,
+    data: (data as PaymentWithBooking | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
+/** ดึง payment ทั้งหมดตาม booking */
 export async function getPaymentsByBooking(
   bookingId: string
 ): Promise<ServiceResponse<PaymentRow[]>> {
@@ -88,28 +98,27 @@ export async function getPaymentsByBooking(
     .order('payment_date', { ascending: false });
 
   return {
-    data: (data as PaymentRow[]) ?? null,
+    data: (data as PaymentRow[]) ?? [],
     error: error?.message ?? null,
   };
 }
 
-export async function recordPayment(
-  input: PaymentInsert
-): Promise<ServiceResponse<PaymentRow>> {
-  const { data: payment, error: payError } = await supabase
+/** บันทึก payment และ sync booking.payment_status อัตโนมัติ */
+export async function recordPayment(input: PaymentInsert): Promise<ServiceResponse<PaymentRow>> {
+  const { data: payment, error: paymentError } = await supabase
     .from('payments')
     .insert(input)
-    .select()
+    .select('*')
     .single();
 
-  if (payError || !payment) {
-    return {
-      data: null,
-      error: payError?.message ?? 'Failed to record payment',
-    };
+  if (paymentError || !payment) {
+    return { data: null, error: paymentError?.message ?? 'Failed to record payment' };
   }
 
-  await syncBookingPaymentStatus(input.booking_id);
+  const { error: syncError } = await syncBookingPaymentStatus(input.booking_id);
+  if (syncError) {
+    return { data: null, error: syncError };
+  }
 
   return {
     data: payment as PaymentRow,
@@ -117,98 +126,114 @@ export async function recordPayment(
   };
 }
 
+/** อัปเดต payment และ sync payment_status ของ booking */
 export async function updatePayment(
   id: string,
   input: PaymentUpdate
 ): Promise<ServiceResponse<PaymentRow>> {
-  const { data: existing, error: fetchErr } = await supabase
+  const { data: existing, error: findError } = await supabase
     .from('payments')
     .select('booking_id')
     .eq('id', id)
     .single();
 
-  if (fetchErr || !existing) {
-    return { data: null, error: fetchErr?.message ?? 'Payment not found' };
+  if (findError || !existing) {
+    return { data: null, error: findError?.message ?? 'Payment not found' };
   }
 
   const { data, error } = await supabase
     .from('payments')
     .update(input)
     .eq('id', id)
-    .select()
+    .select('*')
     .single();
 
-  if (!error) {
-    await syncBookingPaymentStatus((existing as { booking_id: string }).booking_id);
+  if (error) {
+    return { data: null, error: error.message };
+  }
+
+  const bookingId = (existing as Pick<PaymentRow, 'booking_id'>).booking_id;
+  const { error: syncError } = await syncBookingPaymentStatus(bookingId);
+  if (syncError) {
+    return { data: null, error: syncError };
   }
 
   return {
-    data: data as PaymentRow | null,
-    error: error?.message ?? null,
+    data: (data as PaymentRow | null) ?? null,
+    error: null,
   };
 }
 
-export async function deletePayment(
-  id: string
-): Promise<ServiceResponse<null>> {
-  const { data: existing, error: fetchErr } = await supabase
+/** ลบ payment และ sync payment_status ของ booking */
+export async function deletePayment(id: string): Promise<ServiceResponse<null>> {
+  const { data: existing, error: findError } = await supabase
     .from('payments')
     .select('booking_id')
     .eq('id', id)
     .single();
 
-  if (fetchErr || !existing) {
-    return { data: null, error: fetchErr?.message ?? 'Payment not found' };
+  if (findError || !existing) {
+    return { data: null, error: findError?.message ?? 'Payment not found' };
   }
 
-  const { error } = await supabase
-    .from('payments')
-    .delete()
-    .eq('id', id);
-
-  if (!error) {
-    await syncBookingPaymentStatus((existing as { booking_id: string }).booking_id);
+  const { error } = await supabase.from('payments').delete().eq('id', id);
+  if (error) {
+    return { data: null, error: error.message };
   }
 
-  return {
-    data: null,
-    error: error?.message ?? null,
-  };
+  const bookingId = (existing as Pick<PaymentRow, 'booking_id'>).booking_id;
+  const { error: syncError } = await syncBookingPaymentStatus(bookingId);
+  if (syncError) {
+    return { data: null, error: syncError };
+  }
+
+  return { data: null, error: null };
 }
 
-async function syncBookingPaymentStatus(bookingId: string): Promise<void> {
-  const { data: payments } = await supabase
-    .from('payments')
-    .select('amount, status')
-    .eq('booking_id', bookingId)
-    .eq('status', 'completed');
-
-  const totalPaid = (payments ?? []).reduce(
-    (sum, p) => sum + Number((p as { amount: number }).amount),
-    0
-  );
-
-  const { data: booking } = await supabase
+async function syncBookingPaymentStatus(bookingId: string): Promise<ServiceResponse<null>> {
+  const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .select('total_amount')
+    .select('id,total_amount')
     .eq('id', bookingId)
     .single();
 
-  if (!booking) return;
-
-  const totalAmount = Number((booking as { total_amount: number }).total_amount);
-
-  let paymentStatus: 'unpaid' | 'partial' | 'paid';
-  if (totalPaid >= totalAmount && totalAmount > 0) {
-    paymentStatus = 'paid';
-  } else if (totalPaid > 0) {
-    paymentStatus = 'partial';
-  } else {
-    paymentStatus = 'unpaid';
+  if (bookingError || !booking) {
+    return { data: null, error: bookingError?.message ?? 'Booking not found' };
   }
 
-  await supabase
+  const { data: completedPayments, error: paymentError } = await supabase
+    .from('payments')
+    .select('amount')
+    .eq('booking_id', bookingId)
+    .eq('status', 'completed');
+
+  if (paymentError) {
+    return { data: null, error: paymentError.message };
+  }
+
+  const paidAmount = (completedPayments ?? []).reduce((sum, row) => {
+    const amount = Number((row as Pick<PaymentRow, 'amount'>).amount);
+    return sum + (Number.isFinite(amount) ? amount : 0);
+  }, 0);
+
+  const totalAmount = Number((booking as Pick<BookingRow, 'total_amount'>).total_amount);
+  const normalizedTotal = Number.isFinite(totalAmount) && totalAmount > 0 ? totalAmount : 0;
+
+  let paymentStatus: BookingRow['payment_status'] = 'unpaid';
+  if (paidAmount >= normalizedTotal && normalizedTotal > 0) {
+    paymentStatus = 'paid';
+  } else if (paidAmount > 0) {
+    paymentStatus = 'partial';
+  }
+
+  const { error: updateError } = await supabase
     .from('bookings')
     .update({ payment_status: paymentStatus })
     .eq('id', bookingId);
+
+  if (updateError) {
+    return { data: null, error: updateError.message };
+  }
+
+  return { data: null, error: null };
 }

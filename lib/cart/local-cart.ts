@@ -1,5 +1,11 @@
 import { resolveOptionPricing, type PricingOptionLike, type PricingTierLike } from "@/lib/pricing";
 
+export type PassengerBreakdown = {
+  adult: number;
+  child: number;
+  infant: number;
+};
+
 export type LocalCartItem = {
   id: string;
   packageId: string;
@@ -12,12 +18,18 @@ export type LocalCartItem = {
   optionId?: string;
   optionName?: string;
   pax: number;
+  passengers?: PassengerBreakdown;
   unitPrice: number;
   totalPrice: number;
   basePrice?: number;
   pricingTiers?: PricingTierLike[];
   isFlatRate?: boolean;
   flatRatePrice?: number;
+  minPax?: number;
+  maxPax?: number | null;
+  adultUnitPrice?: number;
+  childUnitPrice?: number;
+  infantUnitPrice?: number;
 };
 
 const CART_KEY = "6cat_cart_v1";
@@ -58,13 +70,69 @@ const buildPricingOption = (item: LocalCartItem): PricingOptionLike | undefined 
   };
 };
 
+const toInt = (value: number, fallback: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.floor(parsed);
+};
+
+const clampPax = (item: LocalCartItem, pax: number) => {
+  const min = Math.max(1, toInt(item.minPax ?? 1, 1));
+  const maxRaw = toInt(item.maxPax ?? Number.NaN, Number.NaN);
+  const max = Number.isFinite(maxRaw) && maxRaw > 0 ? maxRaw : null;
+  const normalized = Math.max(min, toInt(pax, min));
+  return max ? Math.min(max, normalized) : normalized;
+};
+
 export function recalculateLocalCartItem(item: LocalCartItem, pax: number): LocalCartItem {
-  const nextPax = Math.max(1, Math.floor(pax));
+  const nextPax = clampPax(item, pax);
+
+  const hasBreakdown = !!item.passengers;
+  const hasSplitUnitPricing =
+    typeof item.adultUnitPrice === "number" ||
+    typeof item.childUnitPrice === "number" ||
+    typeof item.infantUnitPrice === "number";
+
+  if (!item.isFlatRate && hasBreakdown && hasSplitUnitPricing) {
+    const current = item.passengers ?? { adult: item.pax, child: 0, infant: 0 };
+    const delta = nextPax - item.pax;
+    const nextAdult = Math.max(1, current.adult + delta);
+    const nextChild = Math.max(0, current.child);
+    const nextInfant = Math.max(0, current.infant);
+    const computedPax = nextAdult + nextChild + nextInfant;
+
+    const adultUnit = item.adultUnitPrice ?? item.unitPrice;
+    const childUnit = item.childUnitPrice ?? adultUnit;
+    const infantUnit = item.infantUnitPrice ?? 0;
+    const totalPrice = nextAdult * adultUnit + nextChild * childUnit + nextInfant * infantUnit;
+
+    return {
+      ...item,
+      pax: computedPax,
+      passengers: {
+        adult: nextAdult,
+        child: nextChild,
+        infant: nextInfant,
+      },
+      unitPrice: adultUnit,
+      totalPrice,
+      isFlatRate: false,
+      flatRatePrice: undefined,
+    };
+  }
+
   const pricing = resolveOptionPricing(buildPricingOption(item), nextPax, item.basePrice ?? item.unitPrice);
 
   return {
     ...item,
     pax: nextPax,
+    passengers: item.isFlatRate
+      ? {
+          adult: nextPax,
+          child: 0,
+          infant: 0,
+        }
+      : item.passengers,
     unitPrice: pricing.unitPrice,
     totalPrice: pricing.total,
     isFlatRate: pricing.isFlatRate,

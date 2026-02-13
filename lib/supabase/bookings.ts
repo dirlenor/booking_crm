@@ -1,15 +1,15 @@
-import { supabase } from './client';
+import { supabase } from '@/lib/supabase/client';
 import type {
-  BookingRow,
+  BookingDetail,
   BookingInsert,
+  BookingPassengerInsert,
+  BookingPassengerRow,
+  BookingRow,
+  BookingStatus,
   BookingUpdate,
   BookingWithRelations,
-  BookingDetail,
-  BookingPassengerRow,
-  BookingPassengerInsert,
-  BookingStatus,
+  PaginatedData,
   ServiceResponse,
-  PaginatedResponse,
 } from '@/types/database';
 
 interface GetBookingsParams {
@@ -22,10 +22,28 @@ interface GetBookingsParams {
   limit?: number;
 }
 
+interface CreateBookingInput {
+  booking: Omit<BookingInsert, 'booking_ref'>;
+  passengers?: Omit<BookingPassengerInsert, 'booking_id'>[];
+}
+
+const BOOKING_REF_CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const BOOKING_REF_LENGTH = 6;
+const MAX_REF_RETRY = 25;
+
+/** ดึงรายการ booking พร้อม relation และ pagination */
 export async function getBookings(
   params: GetBookingsParams = {}
-): Promise<PaginatedResponse<BookingWithRelations>> {
-  const { search, status, paymentStatus, customerId, tripId, page = 1, limit = 20 } = params;
+): Promise<ServiceResponse<PaginatedData<BookingWithRelations>>> {
+  const {
+    search,
+    status,
+    paymentStatus,
+    customerId,
+    tripId,
+    page = 1,
+    limit = 20,
+  } = params;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
@@ -36,7 +54,9 @@ export async function getBookings(
     .range(from, to);
 
   if (search) {
-    query = query.or(`booking_ref.ilike.%${search}%`);
+    query = query.or(
+      `booking_ref.ilike.%${search}%,customers.name.ilike.%${search}%,customers.email.ilike.%${search}%`
+    );
   }
   if (status) {
     query = query.eq('status', status);
@@ -52,20 +72,27 @@ export async function getBookings(
   }
 
   const { data, error, count } = await query;
+  if (error) {
+    return { data: null, error: error.message };
+  }
 
+  const total = count ?? 0;
   return {
-    data: (data as BookingWithRelations[]) ?? [],
-    error: error?.message ?? null,
-    count: count ?? 0,
-    page,
-    limit,
-    totalPages: Math.ceil((count ?? 0) / limit),
+    data: {
+      items: (data as BookingWithRelations[]) ?? [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    },
+    error: null,
   };
 }
 
-export async function getBookingById(
-  id: string
-): Promise<ServiceResponse<BookingDetail>> {
+/** ดึง booking รายเดียวพร้อม customer/trip/package/passengers/payments */
+export async function getBookingById(id: string): Promise<ServiceResponse<BookingDetail>> {
   const { data, error } = await supabase
     .from('bookings')
     .select('*, customers(*), trips(*, packages(*)), booking_passengers(*), payments(*)')
@@ -73,69 +100,67 @@ export async function getBookingById(
     .single();
 
   return {
-    data: data as BookingDetail | null,
+    data: (data as BookingDetail | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
-export async function generateBookingRef(): Promise<string> {
+/** สร้างเลข booking reference แบบ BK-{YYYY}-{6ALNUM} และเช็กไม่ซ้ำ */
+export async function generateBookingRef(): Promise<ServiceResponse<string>> {
   const year = new Date().getFullYear();
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let ref: string;
-  let exists = true;
 
-  do {
-    const random = Array.from({ length: 6 }, () =>
-      chars.charAt(Math.floor(Math.random() * chars.length))
-    ).join('');
-    ref = `BK-${year}-${random}`;
+  for (let attempt = 0; attempt < MAX_REF_RETRY; attempt += 1) {
+    const random = Array.from({ length: BOOKING_REF_LENGTH }, () => {
+      const index = Math.floor(Math.random() * BOOKING_REF_CHARSET.length);
+      return BOOKING_REF_CHARSET[index];
+    }).join('');
+    const bookingRef = `BK-${year}-${random}`;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('bookings')
       .select('id')
-      .eq('booking_ref', ref)
+      .eq('booking_ref', bookingRef)
       .maybeSingle();
 
-    exists = data !== null;
-  } while (exists);
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    if (!data) {
+      return { data: bookingRef, error: null };
+    }
+  }
 
-  return ref!;
+  return { data: null, error: 'Unable to generate unique booking reference' };
 }
 
-export async function createBooking(
-  input: Omit<BookingInsert, 'booking_ref'>,
-  passengers?: Omit<BookingPassengerInsert, 'booking_id'>[]
-): Promise<ServiceResponse<BookingRow>> {
-  const bookingRef = await generateBookingRef();
+/** สร้าง booking พร้อม passenger rows โดยพยายาม rollback หาก insert ผู้โดยสารล้มเหลว */
+export async function createBooking(input: CreateBookingInput): Promise<ServiceResponse<BookingRow>> {
+  const { data: bookingRef, error: bookingRefError } = await generateBookingRef();
+  if (bookingRefError || !bookingRef) {
+    return { data: null, error: bookingRefError ?? 'Failed to generate booking reference' };
+  }
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .insert({ ...input, booking_ref: bookingRef })
-    .select()
+    .insert({ ...input.booking, booking_ref: bookingRef })
+    .select('*')
     .single();
 
   if (bookingError || !booking) {
-    return {
-      data: null,
-      error: bookingError?.message ?? 'Failed to create booking',
-    };
+    return { data: null, error: bookingError?.message ?? 'Failed to create booking' };
   }
 
-  if (passengers && passengers.length > 0) {
-    const passengerRows = passengers.map((p) => ({
-      ...p,
+  const passengers = input.passengers ?? [];
+  if (passengers.length > 0) {
+    const passengerRows: BookingPassengerInsert[] = passengers.map((passenger) => ({
+      ...passenger,
       booking_id: (booking as BookingRow).id,
     }));
 
-    const { error: passError } = await supabase
-      .from('booking_passengers')
-      .insert(passengerRows);
-
-    if (passError) {
-      return {
-        data: booking as BookingRow,
-        error: `Booking created but passengers failed: ${passError.message}`,
-      };
+    const { error: passengerError } = await supabase.from('booking_passengers').insert(passengerRows);
+    if (passengerError) {
+      await supabase.from('bookings').delete().eq('id', (booking as BookingRow).id);
+      return { data: null, error: `Failed to create passengers: ${passengerError.message}` };
     }
   }
 
@@ -145,6 +170,7 @@ export async function createBooking(
   };
 }
 
+/** อัปเดต booking */
 export async function updateBooking(
   id: string,
   input: BookingUpdate
@@ -153,15 +179,16 @@ export async function updateBooking(
     .from('bookings')
     .update(input)
     .eq('id', id)
-    .select()
+    .select('*')
     .single();
 
   return {
-    data: data as BookingRow | null,
+    data: (data as BookingRow | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
+/** อัปเดตเฉพาะสถานะ booking */
 export async function updateBookingStatus(
   id: string,
   status: BookingStatus
@@ -169,20 +196,16 @@ export async function updateBookingStatus(
   return updateBooking(id, { status });
 }
 
-export async function deleteBooking(
-  id: string
-): Promise<ServiceResponse<null>> {
-  const { error } = await supabase
-    .from('bookings')
-    .delete()
-    .eq('id', id);
-
+/** ลบ booking ตาม id */
+export async function deleteBooking(id: string): Promise<ServiceResponse<null>> {
+  const { error } = await supabase.from('bookings').delete().eq('id', id);
   return {
     data: null,
     error: error?.message ?? null,
   };
 }
 
+/** ดึงผู้โดยสารทั้งหมดใน booking */
 export async function getBookingPassengers(
   bookingId: string
 ): Promise<ServiceResponse<BookingPassengerRow[]>> {
@@ -190,10 +213,10 @@ export async function getBookingPassengers(
     .from('booking_passengers')
     .select('*')
     .eq('booking_id', bookingId)
-    .order('created_at');
+    .order('created_at', { ascending: true });
 
   return {
-    data: (data as BookingPassengerRow[]) ?? null,
+    data: (data as BookingPassengerRow[]) ?? [],
     error: error?.message ?? null,
   };
 }

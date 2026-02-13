@@ -4,8 +4,6 @@ import {
   MapPin,
   Zap,
   Heart,
-  ArrowRight,
-  Link2,
 } from "lucide-react";
 
 const stats = [
@@ -42,33 +40,6 @@ const values = [
   },
 ];
 
-const team = [
-  {
-    name: "Alex Chen",
-    role: "Co-Founder & CEO",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&crop=face",
-  },
-  {
-    name: "Sarah Williams",
-    role: "Chief Technology Officer",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop&crop=face",
-  },
-  {
-    name: "David Miller",
-    role: "Head of Global Operations",
-    image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop&crop=face",
-  },
-  {
-    name: "Elena Rodriguez",
-    role: "Chief Marketing Officer",
-    image:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop&crop=face",
-  },
-];
-
 const galleryImages = [
   "https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&h=600&fit=crop",
   "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=600&fit=crop",
@@ -93,7 +64,7 @@ export default function AboutPage() {
           <span className="mb-6 inline-block rounded-full border border-primary/30 bg-primary/20 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary backdrop-blur-md">
             Our Journey
           </span>
-          <h1 className="mb-6 text-5xl font-black leading-tight tracking-tight text-white md:text-7xl">
+          <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-white md:text-7xl">
             Redefining the way you see the world.
           </h1>
           <p className="mx-auto max-w-2xl text-lg font-medium leading-relaxed text-white/90 md:text-xl">
@@ -111,7 +82,7 @@ export default function AboutPage() {
               key={stat.label}
               className={`text-center ${i > 0 ? "border-l border-gray-100" : ""}`}
             >
-              <p className="mb-1 text-3xl font-black text-primary">
+              <p className="mb-1 text-3xl font-bold text-primary">
                 {stat.value}
               </p>
               <p className="text-sm font-medium text-gray-500">{stat.label}</p>
@@ -126,7 +97,7 @@ export default function AboutPage() {
           {/* Origin Story */}
           <div className="group flex flex-col items-center gap-12 md:flex-row">
             <div className="order-2 flex-1 space-y-6 md:order-1">
-              <h2 className="text-3xl font-black leading-tight tracking-tight md:text-4xl">
+              <h2 className="text-3xl font-bold leading-tight tracking-tight md:text-4xl">
                 From a simple idea to a{" "}
                 <span className="text-primary">global community</span>.
               </h2>
@@ -208,7 +179,7 @@ export default function AboutPage() {
       <section className="bg-white py-24 px-6">
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-black md:text-5xl">
+            <h2 className="mb-4 text-3xl font-bold md:text-5xl">
               Values that drive us
             </h2>
             <p className="mx-auto max-w-2xl text-gray-500">
@@ -236,90 +207,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── Team Section ── */}
-      <section className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mb-16 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div className="max-w-xl">
-            <h2 className="mb-4 text-3xl font-black md:text-5xl">
-              Meet the explorers
-            </h2>
-            <p className="text-gray-500">
-              The passionate team of travel enthusiasts and tech pioneers behind
-              6CATRIP.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="group flex items-center gap-2 font-bold text-primary"
-          >
-            See all careers
-            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {team.map((member) => (
-            <div key={member.name} className="space-y-4">
-              <div className="group relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg">
-                <img
-                  src={member.image}
-                  alt={`Portrait of ${member.name}`}
-                  className="h-full w-full object-cover grayscale transition-all duration-500 hover:grayscale-0"
-                />
-                <div className="absolute bottom-4 right-4 flex translate-y-12 gap-2 transition-transform duration-300 group-hover:translate-y-0">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 backdrop-blur-md">
-                    <Link2 className="h-4 w-4 text-white" />
-                  </div>
-                </div>
-              </div>
-              <div>
-                <h4 className="text-xl font-bold">{member.name}</h4>
-                <p className="text-sm font-semibold text-primary">
-                  {member.role}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA Section ── */}
-      <section className="px-6 py-24">
-        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem]">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 z-10 bg-primary/90 mix-blend-multiply" />
-            <img
-              src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&h=600&fit=crop"
-              alt="Road trip scenery"
-              className="h-full w-full object-cover"
-            />
-          </div>
-
-          <div className="relative z-20 px-8 py-20 text-center text-white md:px-16">
-            <h2 className="mb-6 text-4xl font-black md:text-5xl">
-              Your next adventure starts here
-            </h2>
-            <p className="mx-auto mb-10 max-w-xl text-lg text-white/90">
-              Join millions of travelers who trust 6CATRIP to discover the
-              extraordinary. Where will you go next?
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <button
-                type="button"
-                className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-primary transition-all hover:-translate-y-1 hover:shadow-2xl"
-              >
-                Explore Destinations
-              </button>
-              <button
-                type="button"
-                className="rounded-xl border border-white/30 bg-primary/20 px-8 py-4 text-lg font-bold text-white backdrop-blur-md transition-all hover:bg-white/10"
-              >
-                Download the App
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

@@ -1,11 +1,11 @@
-import { supabase } from './client';
+import { supabase } from '@/lib/supabase/client';
 import type {
-  CustomerRow,
-  CustomerInsert,
-  CustomerUpdate,
-  ServiceResponse,
-  PaginatedResponse,
   BookingWithRelations,
+  CustomerInsert,
+  CustomerRow,
+  CustomerUpdate,
+  PaginatedData,
+  ServiceResponse,
 } from '@/types/database';
 
 interface GetCustomersParams {
@@ -16,9 +16,10 @@ interface GetCustomersParams {
   limit?: number;
 }
 
+/** ดึงรายการลูกค้าพร้อม pagination และ filter */
 export async function getCustomers(
   params: GetCustomersParams = {}
-): Promise<PaginatedResponse<CustomerRow>> {
+): Promise<ServiceResponse<PaginatedData<CustomerRow>>> {
   const { search, status, tier, page = 1, limit = 20 } = params;
   const from = (page - 1) * limit;
   const to = from + limit - 1;
@@ -40,32 +41,36 @@ export async function getCustomers(
   }
 
   const { data, error, count } = await query;
+  if (error) {
+    return { data: null, error: error.message };
+  }
 
+  const total = count ?? 0;
   return {
-    data: (data as CustomerRow[]) ?? [],
-    error: error?.message ?? null,
-    count: count ?? 0,
-    page,
-    limit,
-    totalPages: Math.ceil((count ?? 0) / limit),
+    data: {
+      items: (data as CustomerRow[]) ?? [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    },
+    error: null,
   };
 }
 
-export async function getCustomerById(
-  id: string
-): Promise<ServiceResponse<CustomerRow>> {
-  const { data, error } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('id', id)
-    .single();
+/** ดึงข้อมูลลูกค้ารายเดียวจาก id */
+export async function getCustomerById(id: string): Promise<ServiceResponse<CustomerRow>> {
+  const { data, error } = await supabase.from('customers').select('*').eq('id', id).single();
 
   return {
-    data: data as CustomerRow | null,
+    data: (data as CustomerRow | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
+/** ดึงประวัติการจองของลูกค้า */
 export async function getCustomerBookings(
   customerId: string
 ): Promise<ServiceResponse<BookingWithRelations[]>> {
@@ -76,53 +81,45 @@ export async function getCustomerBookings(
     .order('booking_date', { ascending: false });
 
   return {
-    data: (data as BookingWithRelations[]) ?? null,
+    data: (data as BookingWithRelations[]) ?? [],
     error: error?.message ?? null,
   };
 }
 
-export async function createCustomer(
-  input: Omit<CustomerInsert, 'auth_user_id'>
-): Promise<ServiceResponse<CustomerRow>> {
-  const { data, error } = await supabase
+/** สร้างลูกค้าใหม่ */
+export async function createCustomer(data: CustomerInsert): Promise<ServiceResponse<CustomerRow>> {
+  const { data: created, error } = await supabase
     .from('customers')
-    .insert(input)
-    .select()
+    .insert(data)
+    .select('*')
     .single();
 
   return {
-    data: data as CustomerRow | null,
+    data: (created as CustomerRow | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
+/** อัปเดตข้อมูลลูกค้า */
 export async function updateCustomer(
   id: string,
-  input: CustomerUpdate
+  data: CustomerUpdate
 ): Promise<ServiceResponse<CustomerRow>> {
-  const { data, error } = await supabase
+  const { data: updated, error } = await supabase
     .from('customers')
-    .update(input)
+    .update(data)
     .eq('id', id)
-    .select()
+    .select('*')
     .single();
 
   return {
-    data: data as CustomerRow | null,
+    data: (updated as CustomerRow | null) ?? null,
     error: error?.message ?? null,
   };
 }
 
-export async function deleteCustomer(
-  id: string
-): Promise<ServiceResponse<null>> {
-  const { error } = await supabase
-    .from('customers')
-    .delete()
-    .eq('id', id);
-
-  return {
-    data: null,
-    error: error?.message ?? null,
-  };
+/** ลบลูกค้าตาม id */
+export async function deleteCustomer(id: string): Promise<ServiceResponse<null>> {
+  const { error } = await supabase.from('customers').delete().eq('id', id);
+  return { data: null, error: error?.message ?? null };
 }

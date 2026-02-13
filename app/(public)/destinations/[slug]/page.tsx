@@ -4,24 +4,23 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
-  MapPin, 
-  Calendar, 
-  Star, 
-  Clock, 
-  Users, 
-  Languages, 
-  CheckCircle2, 
-  Share2, 
-  Heart, 
-  ChevronDown, 
+  MapPin,
+  Calendar,
+  Star,
+  Clock,
+  Users,
+  Languages,
+  CheckCircle2,
+  Share2,
+  Heart,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Info,
   ShieldCheck,
   Plane,
   Camera,
-  Utensils,
-  ShoppingCart
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,88 +31,88 @@ import { addLocalCartItem } from '@/lib/cart/local-cart';
 import { resolveOptionPricing } from '@/lib/pricing';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const DESTINATION_DATA = {
-  id: 1,
-  title: "Kyoto Temple Walk & Tea Ceremony",
-  slug: "kyoto-temple-walk",
-  location: "Kyoto, Japan",
-  price: 120,
-  rating: 4.8,
-  reviews_count: 124,
-  duration: "8 Hours",
-  group_size: "Max 12 People",
-  ages: "12-80",
-  language: "English, Japanese",
-  description: "Immerse yourself in the ancient traditions of Kyoto with this comprehensive walking tour. Visit the iconic Fushimi Inari Shrine, experience a traditional tea ceremony in a zen garden, and explore the historic Gion district. Our expert guides will share the hidden stories and cultural significance of these breathtaking locations.",
-  highlights: [
-    "Walk through thousands of torii gates at Fushimi Inari",
-    "Experience an authentic tea ceremony with a tea master",
-    "Explore the preserved streets of Higashiyama district",
-    "Visit the golden pavilion of Kinkaku-ji",
-    "Traditional kaiseki lunch included"
-  ],
-  gallery: [
-    "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=80",
-    "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&q=80",
-    "https://images.unsplash.com/photo-1624253321171-1be53e12f5f4?w=800&q=80",
-    "https://images.unsplash.com/photo-1528360983277-13d9b152c6d1?w=800&q=80"
-  ],
-  itinerary: [
-    {
-      day: 1,
-      title: "Morning: Fushimi Inari & Tofuku-ji",
-      description: "Start your day early at the famous Fushimi Inari Shrine to beat the crowds. We'll hike through the vermilion torii gates and visit the secluded Tofuku-ji temple nearby for its stunning zen gardens.",
-      icon: <Camera className="w-5 h-5" />
-    },
-    {
-      day: 1,
-      title: "Midday: Tea Ceremony & Lunch",
-      description: "Participate in a 45-minute traditional tea ceremony hosted by a certified tea master. Learn about the philosophy of 'Ichigo Ichie'. Followed by a multi-course Kaiseki lunch at a local heritage restaurant.",
-      icon: <Utensils className="w-5 h-5" />
-    },
-    {
-      day: 1,
-      title: "Afternoon: Gion District Walk",
-      description: "Explore the historic geisha district of Gion. We'll walk through Hanami-koji street, keeping an eye out for Geiko and Maiko on their way to appointments, and end the tour at Yasaka Shrine.",
-      icon: <MapPin className="w-5 h-5" />
-    }
-  ],
-  faq: [
-    {
-      question: "Is hotel pickup included?",
-      answer: "We offer pickup from select hotels in central Kyoto. Please check the list during checkout or meet us at Kyoto Station."
-    },
-    {
-      question: "What is the cancellation policy?",
-      answer: "Full refund for cancellations made at least 24 hours before the tour start time. No refund for cancellations within 24 hours."
-    },
-    {
-      question: "Is this tour suitable for children?",
-      answer: "This tour involves a significant amount of walking (approx. 10km). We recommend it for children aged 12 and above who are comfortable walking this distance."
-    },
-    {
-      question: "What should I wear?",
-      answer: "Please wear comfortable walking shoes and modest clothing suitable for entering temples (shoulders and knees covered)."
-    }
-  ],
-  reviews: [
-    {
-      id: 1,
-      user: "Sarah Jenkins",
-      date: "Oct 15, 2023",
-      rating: 5,
-      content: "Absolutely magical experience! Our guide, Ken, was incredibly knowledgeable and the tea ceremony was the highlight of our trip to Japan.",
-      avatar: "SJ"
-    },
-    {
-      id: 2,
-      user: "Michael Chen",
-      date: "Sep 28, 2023",
-      rating: 4,
-      content: "Great tour covering the main sights. A bit of a fast pace in the afternoon, but we saw so much in one day. The lunch was delicious.",
-      avatar: "MC"
-    }
-  ]
+type FaqItem = {
+  question: string;
+  answer: string;
+};
+
+type ReviewItem = {
+  id: string;
+  user: string;
+  date: string;
+  rating: number;
+  content: string;
+  avatar: string;
+};
+
+type PackageContentMeta = {
+  rating?: number;
+  reviews_count?: number;
+  available_from?: string;
+  available_to?: string;
+  policy_text?: string;
+  cancellation_policy?: string;
+  refund_policy?: string;
+  included_items?: string[];
+  excluded_items?: string[];
+  duration_text?: string;
+  group_size_text?: string;
+  age_range?: string;
+  languages?: string[];
+  badge_text?: string;
+  badge_variant?: string;
+  faq?: FaqItem[];
+  reviews?: ReviewItem[];
+};
+
+type DestinationDetailData = {
+  title: string;
+  location: string;
+  price: number;
+  rating: number;
+  reviews_count: number;
+  duration: string;
+  group_size: string;
+  ages: string;
+  language: string;
+  badge_primary: string;
+  badge_secondary: string;
+  description: string;
+  policy_text: string;
+  cancellation_policy: string;
+  refund_policy: string;
+  included_items: string[];
+  excluded_items: string[];
+  highlights: string[];
+  gallery: string[];
+  faq: FaqItem[];
+  reviews: ReviewItem[];
+};
+
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=80';
+
+const DESTINATION_DATA: DestinationDetailData = {
+  title: 'Destination',
+  location: 'Japan',
+  price: 0,
+  rating: 4.7,
+  reviews_count: 0,
+  duration: '1 Day',
+  group_size: 'Max 10 People',
+  ages: 'All Ages',
+  language: 'English',
+  badge_primary: 'Tour',
+  badge_secondary: 'Available',
+  description: 'Package information will be shown here.',
+  policy_text: '',
+  cancellation_policy: '',
+  refund_policy: '',
+  included_items: [],
+  excluded_items: [],
+  highlights: [],
+  gallery: [FALLBACK_IMAGE],
+  faq: [],
+  reviews: [],
 };
 
 type OptionLike = PackageOption & { perks?: string[] };
@@ -132,6 +131,29 @@ type ItineraryItem = {
   description: string;
 };
 
+function toAvatarInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+    .slice(0, 2) || 'TR';
+}
+
+function parseContentMeta(options: unknown): PackageContentMeta | null {
+  if (!Array.isArray(options)) return null;
+  const raw = options.find((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const value = item as { id?: unknown; name?: unknown };
+    return value.id === '__meta__' || value.name === '__meta__';
+  });
+  if (!raw || typeof raw !== 'object') return null;
+  const meta = (raw as { meta?: unknown }).meta;
+  if (!meta || typeof meta !== 'object') return null;
+  return meta as PackageContentMeta;
+}
+
 const toLocalIsoDate = (date: Date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -141,6 +163,45 @@ const toLocalIsoDate = (date: Date) => {
 
 const formatTHB = (amount: number) =>
   `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(amount)} THB`;
+
+const parseIsoDateOrNull = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
+  return trimmed;
+};
+
+const getOptionPaxRange = (option: OptionLike | undefined): { min: number; max: number | null } => {
+  if (!option) return { min: 1, max: null };
+
+  const tierMins = Array.isArray(option.pricingTiers)
+    ? option.pricingTiers
+        .map((tier) => Number(tier.minPax))
+        .filter((value) => Number.isFinite(value) && value > 0)
+    : [];
+  const tierMaxes = Array.isArray(option.pricingTiers)
+    ? option.pricingTiers
+        .map((tier) => Number(tier.maxPax))
+        .filter((value) => Number.isFinite(value) && value > 0)
+    : [];
+
+  const minFromTier = tierMins.length > 0 ? Math.min(...tierMins) : 1;
+  const maxFromTier = tierMaxes.length > 0 ? Math.max(...tierMaxes) : null;
+  const quota = Number(option.quota);
+  const maxFromQuota = Number.isFinite(quota) && quota > 0 ? Math.floor(quota) : null;
+
+  return {
+    min: Math.max(1, minFromTier),
+    max: maxFromTier ?? maxFromQuota,
+  };
+};
+
+const isPrivateOption = (option: OptionLike | undefined): boolean => {
+  if (!option) return false;
+  if (option.groupType === 'private') return true;
+  if (option.isFlatRate === true) return true;
+  return /^private\b/i.test(option.description ?? '');
+};
 
 const AccordionItem = ({ title, children, isOpen, onClick }: { title: string; children: React.ReactNode; isOpen: boolean; onClick: () => void }) => (
   <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
@@ -180,7 +241,11 @@ export default function DestinationDetailPage() {
   const params = useParams<{ slug?: string }>();
   const packageId = params?.slug ?? '';
   const [activeTab, setActiveTab] = useState<'overview' | 'itinerary' | 'reviews'>('overview');
-  const [guests, setGuests] = useState(1);
+  const [adultCount, setAdultCount] = useState(1);
+  const [childCount, setChildCount] = useState(0);
+  const [infantCount, setInfantCount] = useState(0);
+  const billablePassengers = adultCount + childCount;
+  const totalPassengers = adultCount + childCount + infantCount;
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
   const [selectedOption, setSelectedOption] = useState('');
@@ -209,13 +274,16 @@ export default function DestinationDetailPage() {
     toX: number;
     toY: number;
   } | null>(null);
-  const [guestsTouched, setGuestsTouched] = useState(false);
+  const [passengersTouched, setPassengersTouched] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [cartNotice, setCartNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadedPackageId, setLoadedPackageId] = useState<string>('');
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [tourStartDate, setTourStartDate] = useState<string | null>(null);
+  const [tourEndDate, setTourEndDate] = useState<string | null>(null);
 
   useEffect(() => {
     const loadPackage = async () => {
@@ -223,116 +291,177 @@ export default function DestinationDetailPage() {
       setLoading(true);
       setLoadedPackageId('');
       setNotFound(false);
+      setLoadError(null);
 
-      const [{ data: pkg, error: pkgError }, { data: tripRows }, { data: itineraryRows }] = await Promise.all([
-        supabase
-          .from('packages')
-          .select('id, name, destination, description, base_price, highlights, image_url, image_urls, options')
-          .eq('id', packageId)
-          .maybeSingle(),
-        supabase
-          .from('trips')
-          .select('id, date, time, max_participants')
-          .eq('package_id', packageId)
-          .eq('status', 'scheduled')
-          .order('date', { ascending: true }),
-        supabase
-          .from('package_itinerary_items')
-          .select('id, day_number, title, description, sort_order')
-          .eq('package_id', packageId)
-          .order('sort_order', { ascending: true })
-          .order('day_number', { ascending: true }),
-      ]);
+      try {
+        const [{ data: pkg, error: pkgError }, { data: tripRows }, { data: itineraryRows }] = await Promise.all([
+          supabase
+            .from('packages')
+            .select('id, name, destination, description, base_price, highlights, image_url, image_urls, options, duration, max_pax, category, status')
+            .eq('id', packageId)
+            .maybeSingle(),
+          supabase
+            .from('trips')
+            .select('id, date, time, max_participants')
+            .eq('package_id', packageId)
+            .eq('status', 'scheduled')
+            .order('date', { ascending: true }),
+          supabase
+            .from('package_itinerary_items')
+            .select('id, day_number, title, description, sort_order')
+            .eq('package_id', packageId)
+            .order('sort_order', { ascending: true })
+            .order('day_number', { ascending: true }),
+        ]);
 
-      if (pkgError || !pkg) {
-        setNotFound(true);
-        setLoadedPackageId(packageId);
-        setLoading(false);
-        return;
-      }
+        if (pkgError || !pkg) {
+          setNotFound(true);
+          setLoadedPackageId(packageId);
+          return;
+        }
 
-      setDetailData((prev) => ({
-        ...prev,
-        title: pkg.name,
-        location: pkg.destination ?? prev.location,
-        price: Number(pkg.base_price ?? prev.price),
-        description: pkg.description ?? prev.description,
-        highlights: Array.isArray(pkg.highlights) ? pkg.highlights : prev.highlights,
-        gallery:
-          Array.isArray(pkg.image_urls) && pkg.image_urls.length > 0
+        const contentMeta = parseContentMeta(pkg.options);
+        const rangeStart = parseIsoDateOrNull(contentMeta?.available_from);
+        const rangeEnd = parseIsoDateOrNull(contentMeta?.available_to);
+        const packageOptions = Array.isArray(pkg.options)
+          ? (pkg.options as OptionLike[]).filter((option) => option?.id !== '__meta__' && option?.name !== '__meta__')
+          : [];
+
+        setTourStartDate(rangeStart);
+        setTourEndDate(rangeEnd);
+        if (rangeStart) {
+          const [year, month] = rangeStart.split('-').map(Number);
+          if (Number.isFinite(year) && Number.isFinite(month)) {
+            setCalendarMonth(new Date(year, month - 1, 1));
+          }
+        }
+
+        setDetailData((prev) => {
+          const coverImage = typeof pkg.image_url === 'string' && pkg.image_url.trim().length > 0
+            ? pkg.image_url.trim()
+            : null;
+          const galleryImages = Array.isArray(pkg.image_urls)
             ? pkg.image_urls
-            : pkg.image_url
-              ? [
-                  pkg.image_url,
-                  'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
-                  'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=800&q=80',
-                  'https://images.unsplash.com/photo-1528360983277-13d9b152c6d1?w=800&q=80',
-                ]
-              : prev.gallery,
-      }));
+                .filter((image): image is string => typeof image === 'string' && image.trim().length > 0)
+                .map((image) => image.trim())
+            : [];
+          const packageGallery = Array.from(new Set([coverImage, ...galleryImages].filter(Boolean))) as string[];
 
-      if (Array.isArray(pkg.options) && pkg.options.length > 0) {
-        setOptions(pkg.options as OptionLike[]);
-      } else {
-        setOptions([]);
-      }
-      setSelectedOption('');
+          const normalizedFaq = Array.isArray(contentMeta?.faq)
+            ? contentMeta.faq.filter((item) => item?.question && item?.answer)
+            : [];
+          const normalizedReviews = Array.isArray(contentMeta?.reviews)
+            ? contentMeta.reviews.filter((item) => item?.user && item?.content)
+            : [];
 
-      const mappedTrips =
-        tripRows?.map((trip) => ({
-          id: trip.id,
-          date: trip.date,
-          time: trip.time,
-          maxParticipants: trip.max_participants,
-        })) ?? [];
-
-      const tripIds = mappedTrips.map((trip) => trip.id);
-      let remainingMap: Record<string, number> = {};
-
-      if (tripIds.length > 0) {
-        const { data: bookingRows } = await supabase
-          .from('bookings')
-          .select('trip_id, pax, status')
-          .in('trip_id', tripIds)
-          .neq('status', 'cancelled');
-
-        const bookedPaxMap = new Map<string, number>();
-        (bookingRows ?? []).forEach((row) => {
-          const tripId = row.trip_id as string;
-          const pax = Number(row.pax ?? 0);
-          bookedPaxMap.set(tripId, (bookedPaxMap.get(tripId) ?? 0) + pax);
+          return {
+            ...prev,
+            title: pkg.name,
+            location: pkg.destination ?? prev.location,
+            price: Number(pkg.base_price ?? prev.price),
+            description: pkg.description ?? prev.description,
+            duration: contentMeta?.duration_text ?? pkg.duration ?? prev.duration,
+            group_size: contentMeta?.group_size_text ?? `Max ${Number(pkg.max_pax ?? 1)} People`,
+            ages: contentMeta?.age_range ?? prev.ages,
+            language:
+              Array.isArray(contentMeta?.languages) && contentMeta.languages.length > 0
+                ? contentMeta.languages.join(', ')
+                : prev.language,
+            rating: Number(contentMeta?.rating ?? prev.rating),
+            reviews_count: Number(contentMeta?.reviews_count ?? normalizedReviews.length ?? prev.reviews_count),
+            badge_primary: contentMeta?.badge_text ?? pkg.category ?? 'Tour',
+            badge_secondary: contentMeta?.badge_variant ?? (pkg.status === 'published' ? 'Best Seller' : 'Available'),
+            policy_text: contentMeta?.policy_text ?? prev.policy_text,
+            cancellation_policy: contentMeta?.cancellation_policy ?? prev.cancellation_policy,
+            refund_policy: contentMeta?.refund_policy ?? prev.refund_policy,
+            included_items:
+              Array.isArray(contentMeta?.included_items) && contentMeta.included_items.length > 0
+                ? contentMeta.included_items
+                : prev.included_items,
+            excluded_items:
+              Array.isArray(contentMeta?.excluded_items) && contentMeta.excluded_items.length > 0
+                ? contentMeta.excluded_items
+                : prev.excluded_items,
+            highlights: Array.isArray(pkg.highlights) ? pkg.highlights : prev.highlights,
+            gallery: packageGallery.length > 0 ? packageGallery : [FALLBACK_IMAGE],
+            faq: normalizedFaq,
+            reviews: normalizedReviews,
+          };
         });
 
-        remainingMap = Object.fromEntries(
-          mappedTrips.map((trip) => {
-            const max = Number(trip.maxParticipants ?? 0);
-            const booked = bookedPaxMap.get(trip.id) ?? 0;
-            return [trip.id, Math.max(0, max - booked)];
-          })
+        if (packageOptions.length > 0) {
+          setOptions(packageOptions);
+        } else {
+          setOptions([]);
+        }
+        setSelectedOption('');
+
+        const mappedTrips =
+          tripRows?.map((trip) => ({
+            id: trip.id,
+            date: trip.date,
+            time: trip.time,
+            maxParticipants: trip.max_participants,
+          }))
+            .filter((trip) => {
+              if (rangeStart && trip.date < rangeStart) return false;
+              if (rangeEnd && trip.date > rangeEnd) return false;
+              return true;
+            }) ?? [];
+
+        const tripIds = mappedTrips.map((trip) => trip.id);
+        let remainingMap: Record<string, number> = {};
+
+        if (tripIds.length > 0) {
+          const { data: bookingRows } = await supabase
+            .from('bookings')
+            .select('trip_id, pax, status')
+            .in('trip_id', tripIds)
+            .neq('status', 'cancelled');
+
+          const bookedPaxMap = new Map<string, number>();
+          (bookingRows ?? []).forEach((row) => {
+            const tripId = row.trip_id as string;
+            const pax = Number(row.pax ?? 0);
+            bookedPaxMap.set(tripId, (bookedPaxMap.get(tripId) ?? 0) + pax);
+          });
+
+          remainingMap = Object.fromEntries(
+            mappedTrips.map((trip) => {
+              const max = Number(trip.maxParticipants ?? 0);
+              const booked = bookedPaxMap.get(trip.id) ?? 0;
+              return [trip.id, Math.max(0, max - booked)];
+            })
+          );
+        }
+
+        setTrips(mappedTrips);
+        setItineraryItems(
+          (itineraryRows ?? []).map((row) => ({
+            id: row.id,
+            day_number: Number(row.day_number ?? 1),
+            title: String(row.title ?? ''),
+            description: String(row.description ?? ''),
+          }))
         );
+        setRemainingByTripId(remainingMap);
+        setSelectedTripId('');
+        setSelectedTimeTripId('');
+        setSelectedTimeSlot('');
+        setSelectedDate('');
+        setShowDatePicker(false);
+        setAvailabilityChecked(false);
+        setAvailableTrip(null);
+        setNearbyTrips([]);
+
+        setLoadedPackageId(packageId);
+      } catch (error) {
+        console.error('Failed to load destination package:', error);
+        setLoadError('Unable to load destination data right now. Please try again.');
+        setLoadedPackageId(packageId);
+      } finally {
+        setLoading(false);
       }
-
-      setTrips(mappedTrips);
-      setItineraryItems(
-        (itineraryRows ?? []).map((row) => ({
-          id: row.id,
-          day_number: Number(row.day_number ?? 1),
-          title: String(row.title ?? ''),
-          description: String(row.description ?? ''),
-        }))
-      );
-      setRemainingByTripId(remainingMap);
-      setSelectedTripId('');
-      setSelectedTimeTripId('');
-      setSelectedTimeSlot('');
-      setSelectedDate('');
-      setShowDatePicker(false);
-      setAvailabilityChecked(false);
-      setAvailableTrip(null);
-      setNearbyTrips([]);
-
-      setLoadedPackageId(packageId);
-      setLoading(false);
     };
 
     loadPackage();
@@ -343,10 +472,62 @@ export default function DestinationDetailPage() {
     [options, selectedOption]
   );
 
-  const pricing = useMemo(
-    () => resolveOptionPricing(selectedOptionData, guests, detailData.price),
-    [selectedOptionData, guests, detailData.price]
+  const selectedOptionPaxRange = useMemo(
+    () => getOptionPaxRange(selectedOptionData),
+    [selectedOptionData]
   );
+
+  const selectedIsPrivate = isPrivateOption(selectedOptionData);
+  const selectedPricingOption = useMemo(() => {
+    if (!selectedOptionData) return undefined;
+    if (!selectedIsPrivate) return selectedOptionData;
+    return {
+      ...selectedOptionData,
+      isFlatRate: true,
+      flatRatePrice:
+        typeof selectedOptionData.adultPrice === 'number' && selectedOptionData.adultPrice > 0
+          ? selectedOptionData.adultPrice
+          : selectedOptionData.flatRatePrice,
+    };
+  }, [selectedIsPrivate, selectedOptionData]);
+  const effectiveBillablePassengers = selectedIsPrivate ? adultCount : billablePassengers;
+  const effectiveTotalPassengers = selectedIsPrivate ? adultCount : totalPassengers;
+
+  const pricing = useMemo(
+    () => resolveOptionPricing(selectedPricingOption, effectiveBillablePassengers, detailData.price),
+    [selectedPricingOption, effectiveBillablePassengers, detailData.price]
+  );
+
+  const passengerPricing = useMemo(() => {
+    const adultUnit =
+      typeof selectedOptionData?.adultPrice === 'number' && selectedOptionData.adultPrice >= 0
+        ? selectedOptionData.adultPrice
+        : pricing.unitPrice;
+    const childUnit =
+      typeof selectedOptionData?.childPrice === 'number' && selectedOptionData.childPrice >= 0
+        ? selectedOptionData.childPrice
+        : adultUnit;
+    const infantUnit =
+      typeof selectedOptionData?.infantPrice === 'number' && selectedOptionData.infantPrice >= 0
+        ? selectedOptionData.infantPrice
+        : 0;
+
+    if (pricing.isFlatRate) {
+      return {
+        adultUnit,
+        childUnit,
+        infantUnit,
+        total: pricing.total,
+      };
+    }
+
+    return {
+      adultUnit,
+      childUnit,
+      infantUnit,
+      total: adultCount * adultUnit + childCount * childUnit + infantCount * infantUnit,
+    };
+  }, [adultCount, childCount, infantCount, pricing, selectedOptionData]);
 
   const tripsByDate = useMemo(() => {
     const map = new Map<string, TripOption>();
@@ -359,6 +540,11 @@ export default function DestinationDetailPage() {
 
   const todayIso = useMemo(() => toLocalIsoDate(new Date()), []);
   const todayAvailable = tripsByDate.has(todayIso);
+  const canSelectDate = (isoDate: string) => {
+    if (tourStartDate && isoDate < tourStartDate) return false;
+    if (tourEndDate && isoDate > tourEndDate) return false;
+    return true;
+  };
 
   const calendarDays = useMemo(() => {
     const start = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
@@ -381,6 +567,29 @@ export default function DestinationDetailPage() {
     [calendarMonth]
   );
 
+  const canGoPrevMonth = useMemo(() => {
+    if (!tourStartDate) return true;
+    const prev = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1);
+    const [y, m] = tourStartDate.split('-').map(Number);
+    const startMonth = new Date(y, m - 1, 1);
+    return prev >= startMonth;
+  }, [calendarMonth, tourStartDate]);
+
+  const canGoNextMonth = useMemo(() => {
+    if (!tourEndDate) return true;
+    const next = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1);
+    const [y, m] = tourEndDate.split('-').map(Number);
+    const endMonth = new Date(y, m - 1, 1);
+    return next <= endMonth;
+  }, [calendarMonth, tourEndDate]);
+
+  const tourDateRangeLabel = useMemo(() => {
+    if (tourStartDate && tourEndDate) return `${tourStartDate} to ${tourEndDate}`;
+    if (tourStartDate) return `From ${tourStartDate}`;
+    if (tourEndDate) return `Until ${tourEndDate}`;
+    return 'No date range set';
+  }, [tourStartDate, tourEndDate]);
+
   const tripsForSelectedDate = useMemo(
     () => (selectedDate ? trips.filter((trip) => trip.date === selectedDate) : []),
     [selectedDate, trips]
@@ -400,20 +609,111 @@ export default function DestinationDetailPage() {
     return map;
   }, [tripsForSelectedDate]);
 
+  const selectedWeekday = useMemo(() => {
+    if (!selectedDate) return null;
+    const dayIndex = new Date(`${selectedDate}T00:00:00`).getDay();
+    return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayIndex] as
+      | 'Sun'
+      | 'Mon'
+      | 'Tue'
+      | 'Wed'
+      | 'Thu'
+      | 'Fri'
+      | 'Sat';
+  }, [selectedDate]);
+
   // Contract: Time Source Rules - 1.1 Runtime Truth
   // Only use trips.time. Do not fallback to options.times.
-  const optionTimeSlots = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          tripsForSelectedDate.map((trip) => ((trip.time ?? 'Flexible').slice(0, 5) || 'Flexible'))
-        )
-      ),
-    [tripsForSelectedDate]
-  );
+  const optionTimeSlotsById = useMemo(() => {
+    const result = new Map<string, string[]>();
+
+    options.forEach((option) => {
+      const fromRules = Array.isArray(option.slotRules) && selectedWeekday
+        ? option.slotRules
+            .filter((rule) => rule.day === selectedWeekday)
+            .map((rule) => String(rule.time ?? '').slice(0, 5))
+            .filter((time) => /^\d{2}:\d{2}$/.test(time))
+        : [];
+
+      const fromTimes = Array.isArray(option.times)
+        ? option.times
+            .map((time) => String(time ?? '').slice(0, 5))
+            .filter((time) => /^\d{2}:\d{2}$/.test(time))
+        : [];
+
+      const candidateTimes = selectedDate
+        ? fromRules
+        : (fromRules.length > 0 ? fromRules : fromTimes);
+      const uniqueTimes = Array.from(new Set(candidateTimes));
+      const availableTimes = selectedDate
+        ? uniqueTimes.filter((time) => tripsByTimeForSelectedDate.has(time))
+        : uniqueTimes;
+
+      result.set(option.id, availableTimes);
+    });
+
+    return result;
+  }, [options, selectedDate, selectedWeekday, tripsByTimeForSelectedDate]);
+
+  const visibleOptions = useMemo(() => {
+    if (!selectedDate) return [];
+    return options.filter((option) => (optionTimeSlotsById.get(option.id)?.length ?? 0) > 0);
+  }, [options, optionTimeSlotsById, selectedDate]);
+
+  const selectedOptionTimeSlots = useMemo(() => {
+    if (!selectedOption) return [];
+    return optionTimeSlotsById.get(selectedOption) ?? [];
+  }, [optionTimeSlotsById, selectedOption]);
+
+  const requiresPackageSelection = selectedDate ? visibleOptions.length > 0 : false;
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    if (selectedOption && !visibleOptions.some((option) => option.id === selectedOption)) {
+      setSelectedOption('');
+      setSelectedTimeSlot('');
+      setSelectedTripId('');
+      setSelectedTimeTripId('');
+      setAvailabilityChecked(false);
+      setAvailableTrip(null);
+    }
+  }, [selectedDate, selectedOption, visibleOptions]);
+
+  useEffect(() => {
+    if (!selectedOptionData) return;
+
+    if (selectedIsPrivate) {
+      const minPax = selectedOptionPaxRange.min;
+      const maxPax = selectedOptionPaxRange.max;
+      setChildCount(0);
+      setInfantCount(0);
+      setAdultCount((prev) => {
+        const clampedMin = Math.max(prev, minPax);
+        return maxPax ? Math.min(clampedMin, maxPax) : clampedMin;
+      });
+      return;
+    }
+
+    setAdultCount((prev) => Math.max(1, prev));
+  }, [selectedIsPrivate, selectedOptionData, selectedOptionPaxRange.max, selectedOptionPaxRange.min]);
 
   const canAddToCart =
-    !!selectedDate && (options.length === 0 || !!selectedOption) && guests > 0 && availabilityChecked && !!availableTrip;
+    !!selectedDate && (!requiresPackageSelection || !!selectedOption) && adultCount > 0 && availabilityChecked && !!availableTrip;
+
+  const reviewDistribution = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (let i = 1; i <= 5; i += 1) counts.set(i, 0);
+    detailData.reviews.forEach((review) => {
+      const score = Math.max(1, Math.min(5, Math.round(review.rating)));
+      counts.set(score, (counts.get(score) ?? 0) + 1);
+    });
+    const total = detailData.reviews.length;
+    return [5, 4, 3, 2, 1].map((star) => ({
+      star,
+      count: counts.get(star) ?? 0,
+      percent: total > 0 ? ((counts.get(star) ?? 0) / total) * 100 : 0,
+    }));
+  }, [detailData.reviews]);
 
   useEffect(() => {
     if (!showSelectionDrawer) return;
@@ -476,17 +776,37 @@ export default function DestinationDetailPage() {
       setBookingError('Please select your preferred date.');
       return;
     }
-    if (options.length > 0 && !selectedOption) {
+    if (selectedDate && visibleOptions.length === 0) {
+      setBookingError('No package is available for this selected date.');
+      return;
+    }
+    if (requiresPackageSelection && !selectedOption) {
       setBookingError('Please select a package option.');
       return;
     }
-    if (!guests || guests < 1) {
-      setBookingError('Please select number of guests.');
+    if (adultCount < 1) {
+      setBookingError('Please select at least 1 adult.');
       return;
+    }
+
+    if (selectedOptionData) {
+      if (effectiveTotalPassengers < selectedOptionPaxRange.min) {
+        setBookingError(`Minimum ${selectedOptionPaxRange.min} travelers required for this package.`);
+        return;
+      }
+      if (selectedOptionPaxRange.max && effectiveTotalPassengers > selectedOptionPaxRange.max) {
+        setBookingError(`Maximum ${selectedOptionPaxRange.max} travelers allowed for this package.`);
+        return;
+      }
     }
 
     if (!selectedTimeSlot) {
       setBookingError('Please select a time slot.');
+      return;
+    }
+
+    if (selectedOption && selectedOptionTimeSlots.length > 0 && !selectedOptionTimeSlots.includes(selectedTimeSlot)) {
+      setBookingError('Selected time is not available for this package.');
       return;
     }
 
@@ -495,8 +815,8 @@ export default function DestinationDetailPage() {
     );
     if (picked) {
       const remaining = remainingByTripId[picked.id] ?? Number(picked.maxParticipants ?? 0);
-      if (remaining < guests) {
-        setBookingError('This time slot is sold out for the selected guest count.');
+      if (remaining < effectiveTotalPassengers) {
+        setBookingError('This time slot is sold out for the selected traveler count.');
         return;
       }
 
@@ -511,7 +831,7 @@ export default function DestinationDetailPage() {
     const target = new Date(selectedDate).getTime();
     const sameTimeTrips = trips
       .filter((trip) => ((trip.time ?? 'Flexible').slice(0, 5) || 'Flexible') === selectedTimeSlot)
-      .filter((trip) => (remainingByTripId[trip.id] ?? Number(trip.maxParticipants ?? 0)) >= guests);
+      .filter((trip) => (remainingByTripId[trip.id] ?? Number(trip.maxParticipants ?? 0)) >= effectiveTotalPassengers);
 
     const sourceTrips = sameTimeTrips.length > 0 ? sameTimeTrips : trips;
 
@@ -538,13 +858,28 @@ export default function DestinationDetailPage() {
       setBookingError('Please select your preferred date.');
       return;
     }
-    if (options.length > 0 && !selectedOption) {
+    if (selectedDate && visibleOptions.length === 0) {
+      setBookingError('No package is available for this selected date.');
+      return;
+    }
+    if (requiresPackageSelection && !selectedOption) {
       setBookingError('Please select a package option.');
       return;
     }
-    if (!guests || guests < 1) {
-      setBookingError('Please select number of guests.');
+    if (adultCount < 1) {
+      setBookingError('Please select at least 1 adult.');
       return;
+    }
+
+    if (selectedOptionData) {
+      if (effectiveTotalPassengers < selectedOptionPaxRange.min) {
+        setBookingError(`Minimum ${selectedOptionPaxRange.min} travelers required for this package.`);
+        return;
+      }
+      if (selectedOptionPaxRange.max && effectiveTotalPassengers > selectedOptionPaxRange.max) {
+        setBookingError(`Maximum ${selectedOptionPaxRange.max} travelers allowed for this package.`);
+        return;
+      }
     }
     if (!availabilityChecked || !availableTrip) {
       setBookingError('Please check availability before adding to cart.');
@@ -570,13 +905,23 @@ export default function DestinationDetailPage() {
       tripTime: trip.time ?? undefined,
       optionId: selectedOptionData?.id ?? undefined,
       optionName: selectedOptionData?.name ?? undefined,
-      pax: guests,
-      unitPrice: pricing.unitPrice,
-      totalPrice: pricing.total,
+      pax: effectiveTotalPassengers,
+      passengers: {
+        adult: adultCount,
+        child: selectedIsPrivate ? 0 : childCount,
+        infant: selectedIsPrivate ? 0 : infantCount,
+      },
+      unitPrice: passengerPricing.adultUnit,
+      totalPrice: passengerPricing.total,
       basePrice: detailData.price,
       pricingTiers: selectedOptionData?.pricingTiers ?? [],
       isFlatRate: pricing.isFlatRate,
       flatRatePrice: pricing.isFlatRate ? pricing.unitPrice : undefined,
+      minPax: selectedOptionPaxRange.min,
+      maxPax: selectedOptionPaxRange.max,
+      adultUnitPrice: passengerPricing.adultUnit,
+      childUnitPrice: selectedIsPrivate ? undefined : passengerPricing.childUnit,
+      infantUnitPrice: selectedIsPrivate ? undefined : passengerPricing.infantUnit,
     });
 
     setCartNotice('Added to cart. You can review it in your cart.');
@@ -621,6 +966,32 @@ export default function DestinationDetailPage() {
 
   if (loading || loadedPackageId !== packageId) {
     return <DestinationDetailSkeleton />;
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-white pb-20">
+        <div className="bg-neutral-50 border-b border-gray-200">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+              <span>/</span>
+              <Link href="/destinations" className="hover:text-primary transition-colors">Destinations</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-xl">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unable to load destination</h1>
+            <p className="text-gray-600 mb-6">{loadError}</p>
+            <Button type="button" className="rounded-lg" onClick={() => window.location.reload()}>
+              Try again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (notFound) {
@@ -668,8 +1039,8 @@ export default function DestinationDetailPage() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none px-3 py-1">Cultural</Badge>
-                <Badge variant="outline" className="text-gray-600 border-gray-300">Best Seller</Badge>
+                <Badge className="bg-primary/10 text-primary hover:bg-primary/20 border-none px-3 py-1">{detailData.badge_primary}</Badge>
+                <Badge variant="outline" className="text-gray-600 border-gray-300">{detailData.badge_secondary}</Badge>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{detailData.title}</h1>
               <div className="flex items-center gap-6 text-sm text-gray-600">
@@ -696,12 +1067,12 @@ export default function DestinationDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-          <div className="md:col-span-3 h-full relative group overflow-hidden rounded-2xl cursor-pointer">
-            <img 
-              src={detailData.gallery[0]} 
-              alt={detailData.title} 
-              className="w-full h-[320px] md:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            <div className="md:col-span-3 h-full relative group overflow-hidden rounded-2xl cursor-pointer">
+              <img 
+                src={detailData.gallery[0] ?? FALLBACK_IMAGE} 
+                alt={detailData.title} 
+                className="w-full h-[320px] md:h-[420px] object-cover transition-transform duration-700 group-hover:scale-105"
+              />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
           </div>
           <div className="hidden md:flex flex-col gap-4">
@@ -768,24 +1139,27 @@ export default function DestinationDetailPage() {
                 <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/[0.03] p-5 md:p-6 animate-in fade-in-0 slide-in-from-top-3 duration-300">
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div>
-                      <h3 className="text-lg md:text-xl font-bold text-gray-900">Pick your travel date</h3>
-                      <p className="text-sm text-gray-600">
-                        {todayAvailable ? 'Today is available for travel.' : 'Today is not available. Pick another date.'}
-                      </p>
-                    </div>
+                       <h3 className="text-lg md:text-xl font-bold text-gray-900">Pick your travel date</h3>
+                       <p className="text-sm text-gray-600">
+                         {todayAvailable ? 'Today is available for travel.' : 'Today is not available. Pick another date.'}
+                       </p>
+                       <p className="text-xs text-gray-500 mt-1">Travel window: {tourDateRangeLabel}</p>
+                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
+                        disabled={!canGoPrevMonth}
                         onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1))}
-                        className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-primary/40 hover:text-primary"
+                        className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-primary/40 hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="Previous month"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
+                        disabled={!canGoNextMonth}
                         onClick={() => setCalendarMonth(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1))}
-                        className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-primary/40 hover:text-primary"
+                        className="w-9 h-9 rounded-full border border-gray-200 bg-white flex items-center justify-center text-gray-600 hover:border-primary/40 hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="Next month"
                       >
                         <ChevronRight className="w-4 h-4" />
@@ -811,7 +1185,8 @@ export default function DestinationDetailPage() {
                           return <div key={`empty-${idx}`} className="h-11 rounded-lg bg-gray-50/70" />;
                         }
 
-                        const available = tripsByDate.has(cell.date);
+                        const withinRange = canSelectDate(cell.date);
+                        const available = withinRange && tripsByDate.has(cell.date);
                         const selected = selectedDate === cell.date;
 
                         return (
@@ -844,14 +1219,47 @@ export default function DestinationDetailPage() {
                 </div>
               )}
 
-              {options.length > 0 && (
+              {selectedDate && options.length > 0 && (
                 <div className="border border-gray-100 rounded-2xl p-6 bg-white mb-8">
                   <h3 className="text-xl font-bold text-gray-900 mb-4">Choose your package option</h3>
 
                   <div className="space-y-4">
-                    {options.map((option) => {
-                      const pricing = resolveOptionPricing(option, guests, detailData.price);
-                      const displayPrice = pricing.isFlatRate ? pricing.total : pricing.unitPrice;
+                    {visibleOptions.length === 0 ? (
+                      <p className="text-sm text-gray-500">No package is available for this selected date.</p>
+                    ) : null}
+                    {visibleOptions.map((option) => {
+                      const optionIsPrivate = isPrivateOption(option);
+                      const optionRequestedPax = optionIsPrivate ? adultCount : totalPassengers;
+                      const optionPricingInput = optionIsPrivate
+                        ? {
+                            ...option,
+                            isFlatRate: true,
+                            flatRatePrice:
+                              typeof option.adultPrice === 'number' && option.adultPrice > 0
+                                ? option.adultPrice
+                                : option.flatRatePrice,
+                          }
+                        : option;
+                      const optionPricing = resolveOptionPricing(
+                        optionPricingInput,
+                        optionIsPrivate ? adultCount : billablePassengers,
+                        detailData.price
+                      );
+                      const optionPaxRange = getOptionPaxRange(option);
+                      const seatLabel = optionPaxRange.max
+                        ? optionPaxRange.min === optionPaxRange.max
+                          ? `${optionPaxRange.max} seats`
+                          : `${optionPaxRange.min}-${optionPaxRange.max} seats`
+                        : `${optionPaxRange.min}+ seats`;
+                      const displayPrice =
+                        optionIsPrivate
+                          ? optionPricing.total
+                          : typeof option.adultPrice === 'number' && option.adultPrice >= 0
+                          ? option.adultPrice
+                          : optionPricing.isFlatRate
+                            ? optionPricing.total
+                            : optionPricing.unitPrice;
+                      const optionTimeSlots = optionTimeSlotsById.get(option.id) ?? [];
                       return (
                       <label
                         key={option.id}
@@ -882,7 +1290,7 @@ export default function DestinationDetailPage() {
                           <div className="text-right">
                             <span className="text-xs text-gray-500">From</span>
                             <div className="text-lg font-bold text-primary">{formatTHB(displayPrice)}</div>
-                            <div className="text-xs text-gray-500">{option.quota} seats</div>
+                            <div className="text-xs text-gray-500">{seatLabel}</div>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -906,7 +1314,7 @@ export default function DestinationDetailPage() {
                                     const trip = tripsByTimeForSelectedDate.get(slot);
                                     const active = selectedTimeSlot === slot;
                                     const remaining = trip ? (remainingByTripId[trip.id] ?? Number(trip.maxParticipants ?? 0)) : 0;
-                                    const soldOut = !!trip && remaining < guests;
+                                    const soldOut = !!trip && remaining < optionRequestedPax;
                                     const available = !!trip && !soldOut;
 
                                     return (
@@ -965,6 +1373,43 @@ export default function DestinationDetailPage() {
                   </li>
                 ))}
               </ul>
+
+              {(detailData.included_items.length > 0 || detailData.excluded_items.length > 0) && (
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5">
+                    <h4 className="text-base font-bold text-gray-900 mb-3">Included</h4>
+                    {detailData.included_items.length === 0 ? (
+                      <p className="text-sm text-gray-500">No included items listed.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {detailData.included_items.map((item, idx) => (
+                          <li key={`included-${idx}`} className="flex items-start gap-2 text-sm text-gray-700">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-5">
+                    <h4 className="text-base font-bold text-gray-900 mb-3">Excluded</h4>
+                    {detailData.excluded_items.length === 0 ? (
+                      <p className="text-sm text-gray-500">No excluded items listed.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {detailData.excluded_items.map((item, idx) => (
+                          <li key={`excluded-${idx}`} className="flex items-start gap-2 text-sm text-gray-700">
+                            <Info className="w-4 h-4 text-rose-600 mt-0.5 shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              )}
+
             </div>
 
             <hr className="border-gray-100" />
@@ -1006,34 +1451,50 @@ export default function DestinationDetailPage() {
               </div>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you'll be</h2>
-              <div className="w-full h-[300px] bg-gray-100 rounded-2xl flex items-center justify-center relative overflow-hidden group">
-                <div className="absolute inset-0 opacity-20 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center"></div>
-                <div className="z-10 text-center">
-                  <div className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-3 text-primary animate-bounce">
-                    <MapPin className="w-6 h-6" />
+            {(detailData.policy_text || detailData.cancellation_policy || detailData.refund_policy) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {detailData.policy_text ? (
+                  <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                    <h4 className="text-base font-bold text-gray-900 mb-2">Policy</h4>
+                    <p className="text-sm text-gray-600 whitespace-pre-line">{detailData.policy_text}</p>
                   </div>
-                  <Button variant="outline" className="bg-white/80 backdrop-blur border-primary text-primary hover:bg-primary hover:text-white">
-                    View on Google Maps
-                  </Button>
-                </div>
+                ) : null}
+
+                {detailData.cancellation_policy ? (
+                  <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                    <h4 className="text-base font-bold text-gray-900 mb-2">Cancellation</h4>
+                    <p className="text-sm text-gray-600 whitespace-pre-line">{detailData.cancellation_policy}</p>
+                  </div>
+                ) : null}
+
+                {detailData.refund_policy ? (
+                  <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                    <h4 className="text-base font-bold text-gray-900 mb-2">Refund</h4>
+                    <p className="text-sm text-gray-600 whitespace-pre-line">{detailData.refund_policy}</p>
+                  </div>
+                ) : null}
               </div>
-            </div>
+            )}
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
               <div>
-                {detailData.faq.map((item, idx) => (
-                  <AccordionItem 
-                    key={idx} 
-                    title={item.question} 
-                    isOpen={openFaqIndex === idx}
-                    onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
-                  >
-                    {item.answer}
-                  </AccordionItem>
-                ))}
+                {detailData.faq.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 text-sm text-gray-500">
+                    FAQ is not available yet.
+                  </div>
+                ) : (
+                  detailData.faq.map((item, idx) => (
+                    <AccordionItem 
+                      key={idx} 
+                      title={item.question} 
+                      isOpen={openFaqIndex === idx}
+                      onClick={() => setOpenFaqIndex(openFaqIndex === idx ? null : idx)}
+                    >
+                      {item.answer}
+                    </AccordionItem>
+                  ))
+                )}
               </div>
             </div>
 
@@ -1057,13 +1518,13 @@ export default function DestinationDetailPage() {
                   </div>
                 
                 <div className="flex-1 w-full space-y-2">
-                  {[5, 4, 3, 2, 1].map((stars) => (
-                    <div key={stars} className="flex items-center gap-3 text-sm">
-                      <span className="font-medium w-3">{stars}</span>
+                  {reviewDistribution.map((item) => (
+                    <div key={item.star} className="flex items-center gap-3 text-sm">
+                      <span className="font-medium w-3">{item.star}</span>
                       <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-amber-400 rounded-full" 
-                          style={{ width: stars === 5 ? '70%' : stars === 4 ? '20%' : '5%' }}
+                          style={{ width: `${item.percent}%` }}
                         ></div>
                       </div>
                     </div>
@@ -1071,29 +1532,35 @@ export default function DestinationDetailPage() {
                 </div>
               </div>
 
-              <div className="space-y-6">
-                {detailData.reviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                        {review.avatar}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-gray-900">{review.user}</h4>
-                          <span className="text-sm text-gray-500">{review.date}</span>
+              {detailData.reviews.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-5 text-sm text-gray-500">
+                  No reviews yet.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {detailData.reviews.map((review) => (
+                    <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                          {review.avatar}
                         </div>
-                        <div className="flex items-center gap-1 mb-2">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`w-3.5 h-3.5 ${s <= review.rating ? 'text-amber-400 fill-current' : 'text-gray-300'}`} />
-                          ))}
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-bold text-gray-900">{review.user}</h4>
+                            <span className="text-sm text-gray-500">{review.date}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mb-2">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className={`w-3.5 h-3.5 ${s <= review.rating ? 'text-amber-400 fill-current' : 'text-gray-300'}`} />
+                            ))}
+                          </div>
+                          <p className="text-gray-600">{review.content}</p>
                         </div>
-                        <p className="text-gray-600">{review.content}</p>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
           </div>
@@ -1104,13 +1571,14 @@ export default function DestinationDetailPage() {
                 <CardContent className="p-6">
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-gray-500 text-sm">From</span>
-                    <span className="text-3xl font-bold text-gray-900">{formatTHB(pricing.unitPrice)}</span>
-                    <span className="text-gray-500 text-sm">{pricing.isFlatRate ? '/ แพ็กเกจ' : '/ คน'}</span>
+                    <span className="text-3xl font-bold text-gray-900">{formatTHB(passengerPricing.adultUnit)}</span>
+                    <span className="text-gray-500 text-sm">{pricing.isFlatRate ? '/ package' : '/ person'}</span>
                   </div>
 
                   <div className="space-y-4 mb-6">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-gray-700">Select Date</label>
+                      <p className="text-xs text-gray-500">Travel window: {tourDateRangeLabel}</p>
                       <Button
                         type="button"
                         variant="outline"
@@ -1123,53 +1591,193 @@ export default function DestinationDetailPage() {
                       </Button>
                     </div>
                     
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-gray-700">Guests</label>
-                      <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-gray-50">
-                        <button 
-                          className="w-9 h-9 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
-                          onClick={() => {
-                            setGuestsTouched(true);
-                            setGuests(Math.max(1, guests - 1));
-                            setShowSelectionDrawer(true);
-                            resetAvailability();
-                          }}
-                          disabled={guests <= 1}
-                        >
-                          -
-                        </button>
-                        <div className="flex-1 text-center font-semibold text-gray-900">{guests}</div>
-                        <button 
-                          className="w-9 h-9 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600"
-                          onClick={() => {
-                            setGuestsTouched(true);
-                            setGuests(guests + 1);
-                            setShowSelectionDrawer(true);
-                            resetAvailability();
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
+                    <div className="space-y-3">
+                      {selectedIsPrivate ? (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <label className="text-sm font-medium text-gray-700">Travelers</label>
+                            <p className="text-xs text-gray-500">
+                              Private package ({selectedOptionPaxRange.min}
+                              {selectedOptionPaxRange.max ? `-${selectedOptionPaxRange.max}` : "+"} pax)
+                            </p>
+                          </div>
+                          <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-gray-50">
+                            <button
+                              className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                              onClick={() => {
+                                setPassengersTouched(true);
+                                setAdultCount(Math.max(selectedOptionPaxRange.min, adultCount - 1));
+                                setShowSelectionDrawer(true);
+                                resetAvailability();
+                              }}
+                              disabled={adultCount <= selectedOptionPaxRange.min}
+                            >
+                              -
+                            </button>
+                            <div className="w-10 text-center font-semibold text-gray-900">{adultCount}</div>
+                            <button
+                              className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                              onClick={() => {
+                                setPassengersTouched(true);
+                                setAdultCount((prev) =>
+                                  selectedOptionPaxRange.max ? Math.min(selectedOptionPaxRange.max, prev + 1) : prev + 1
+                                );
+                                setShowSelectionDrawer(true);
+                                resetAvailability();
+                              }}
+                              disabled={!!selectedOptionPaxRange.max && adultCount >= selectedOptionPaxRange.max}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700">Adult</label>
+                              <p className="text-xs text-gray-500">Ages 13+</p>
+                            </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-gray-50">
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setAdultCount(Math.max(1, adultCount - 1));
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                                disabled={adultCount <= 1}
+                              >
+                                -
+                              </button>
+                              <div className="w-10 text-center font-semibold text-gray-900">{adultCount}</div>
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setAdultCount(adultCount + 1);
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700">Child</label>
+                              <p className="text-xs text-gray-500">Ages 3-12</p>
+                            </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-gray-50">
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setChildCount(Math.max(0, childCount - 1));
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                                disabled={childCount <= 0}
+                              >
+                                -
+                              </button>
+                              <div className="w-10 text-center font-semibold text-gray-900">{childCount}</div>
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setChildCount(childCount + 1);
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <label className="text-sm font-medium text-gray-700">Infant</label>
+                              <p className="text-xs text-gray-500">Ages 0-2</p>
+                            </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg p-1 bg-gray-50">
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600 disabled:opacity-50"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setInfantCount(Math.max(0, infantCount - 1));
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                                disabled={infantCount <= 0}
+                              >
+                                -
+                              </button>
+                              <div className="w-10 text-center font-semibold text-gray-900">{infantCount}</div>
+                              <button 
+                                className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm border border-gray-100 hover:bg-gray-50 text-gray-600"
+                                onClick={() => {
+                                  setPassengersTouched(true);
+                                  setInfantCount(infantCount + 1);
+                                  setShowSelectionDrawer(true);
+                                  resetAvailability();
+                                }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {pricing.isFlatRate
-                          ? `${formatTHB(pricing.unitPrice)} (Flat rate)`
-                          : `${formatTHB(pricing.unitPrice)} x ${guests} guests`}
-                      </span>
-                      <span className="font-medium text-gray-900">{formatTHB(pricing.total)}</span>
-                    </div>
+                    {!pricing.isFlatRate && (
+                      <>
+                        {adultCount > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Adult: {adultCount} × {formatTHB(passengerPricing.adultUnit)}</span>
+                            <span className="font-medium text-gray-900">{formatTHB(passengerPricing.adultUnit * adultCount)}</span>
+                          </div>
+                        )}
+                        {childCount > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Child: {childCount} × {formatTHB(passengerPricing.childUnit)}</span>
+                            <span className="font-medium text-gray-900">{formatTHB(passengerPricing.childUnit * childCount)}</span>
+                          </div>
+                        )}
+                        {infantCount > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Infant: {infantCount} × {formatTHB(passengerPricing.infantUnit)}</span>
+                            <span className="font-medium text-gray-900">{formatTHB(passengerPricing.infantUnit * infantCount)}</span>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {pricing.isFlatRate && (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Private package rate</span>
+                          <span className="font-medium text-gray-900">{formatTHB(pricing.total)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Travelers</span>
+                          <span className="font-medium text-gray-900">{adultCount}</span>
+                        </div>
+                      </>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Service fee</span>
                       <span className="font-medium text-gray-900">{formatTHB(0)}</span>
                     </div>
                     <div className="pt-3 border-t border-gray-200 flex justify-between">
-                      <span className="font-bold text-gray-900">Total</span>
-                      <span className="font-bold text-primary text-lg">{formatTHB(pricing.total)}</span>
+                      <span className="font-bold text-gray-900">Total ({effectiveTotalPassengers} travelers)</span>
+                      <span className="font-bold text-primary text-lg">{formatTHB(passengerPricing.total)}</span>
                     </div>
                   </div>
 
@@ -1178,7 +1786,7 @@ export default function DestinationDetailPage() {
                     onClick={handleCheckAvailability}
                     disabled={loading || trips.length === 0}
                   >
-                    Check Availability
+                    Check
                   </Button>
                   {bookingError && (
                     <p className="text-sm text-destructive mt-3">{bookingError}</p>
@@ -1204,7 +1812,7 @@ export default function DestinationDetailPage() {
                               setAvailabilityChecked(false);
                               setNearbyTrips([]);
                               setBookingError(null);
-                              setBookingSuccess('Nearby date selected. Click Check Availability to confirm.');
+                              setBookingSuccess('Nearby date selected. Click Check to confirm.');
                             }}
                             className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100"
                           >
@@ -1315,11 +1923,11 @@ export default function DestinationDetailPage() {
                     layout
                     transition={{ type: 'spring', stiffness: 220, damping: 28 }}
                     className={`inline-flex items-center rounded-full bg-white/15 whitespace-nowrap overflow-hidden ${
-                      guestsTouched ? 'max-w-[180px] opacity-100 px-3 py-1.5' : 'max-w-0 opacity-0 px-0 py-0'
+                      passengersTouched ? 'max-w-[200px] opacity-100 px-3 py-1.5' : 'max-w-0 opacity-0 px-0 py-0'
                     }`}
                   >
                     <Users className="w-4 h-4 mr-2 shrink-0" />
-                    <AnimatedWords text={`${guests} guests`} />
+                    <AnimatedWords text={`${effectiveTotalPassengers} travelers`} />
                   </motion.div>
 
                   <motion.div
@@ -1342,17 +1950,36 @@ export default function DestinationDetailPage() {
                   </motion.div>
                 </motion.div>
 
-                <Button
-                  id="drawer-add-to-cart-btn"
-                  className="h-12 rounded-full bg-accent hover:bg-accent/90 text-white px-4 gap-2.5 shadow-lg shadow-black/20 whitespace-nowrap"
-                  onClick={handleAddToCart}
-                  disabled={!canAddToCart}
-                  aria-label="Add to cart"
-                  title="Add to cart"
+                <motion.div
+                  initial={{ scale: 0.92, y: 4 }}
+                  animate={
+                    canAddToCart
+                      ? { scale: [1, 1.08, 1], y: [0, -1, 0] }
+                      : { scale: 1, y: 0 }
+                  }
+                  transition={
+                    canAddToCart
+                      ? {
+                          duration: 0.75,
+                          ease: [0.22, 1, 0.36, 1],
+                          repeat: Infinity,
+                          repeatDelay: 1.9,
+                        }
+                      : { duration: 0.2 }
+                  }
                 >
-                  <ShoppingCart className="w-6 h-6" />
-                  <span className="text-sm font-bold">{formatTHB(pricing.total)}</span>
-                </Button>
+                  <Button
+                    id="drawer-add-to-cart-btn"
+                    className="h-12 rounded-full border border-white/80 bg-white px-4 gap-2.5 text-primary shadow-[0_10px_24px_rgba(15,23,42,0.22)] whitespace-nowrap hover:bg-slate-100 disabled:bg-white/40 disabled:text-white/75 disabled:border-white/20"
+                    onClick={handleAddToCart}
+                    disabled={!canAddToCart}
+                    aria-label="Add to cart"
+                    title="Add to cart"
+                  >
+                    <ShoppingCart className="w-6 h-6" />
+                    <span className="text-sm font-bold">{formatTHB(passengerPricing.total)}</span>
+                  </Button>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
