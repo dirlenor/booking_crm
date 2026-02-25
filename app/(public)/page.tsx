@@ -12,8 +12,8 @@ export default function LandingPage() {
     <>
       <HeroSection />
       <FeaturedDestinations />
-      <PopularPackages />
       <OurStories />
+      <PopularPackages />
       <LogoMarquee />
       <BestPriceOffer />
       <LatestNews />

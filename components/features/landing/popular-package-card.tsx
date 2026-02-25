@@ -20,11 +20,13 @@ export function PopularPackageCard({
   href,
   showCta = true,
   className,
+  titleClassName,
 }: {
   pkg: PopularPackage;
   href?: string;
   showCta?: boolean;
   className?: string;
+  titleClassName?: string;
 }) {
   const content = (
     <div
@@ -51,7 +53,12 @@ export function PopularPackageCard({
           <span className="text-gray-400">({pkg.reviews} reviews)</span>
         </div>
 
-        <h3 className="font-bold text-lg text-primary mb-2 group-hover:text-accent transition-colors line-clamp-1">
+        <h3
+          className={cn(
+            "font-bold text-lg mb-2 transition-colors line-clamp-1",
+            titleClassName ?? "text-primary group-hover:text-accent"
+          )}
+        >
           {pkg.title}
         </h3>
 

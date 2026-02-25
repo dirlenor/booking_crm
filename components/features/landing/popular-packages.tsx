@@ -44,7 +44,13 @@ export async function PopularPackages() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {packages.map((pkg) => (
-            <PopularPackageCard key={pkg.id} pkg={pkg} href={`/destinations/${pkg.id}`} showCta={false} />
+            <PopularPackageCard
+              key={pkg.id}
+              pkg={pkg}
+              href={`/destinations/${pkg.id}`}
+              showCta={false}
+              titleClassName="text-gray-900 group-hover:text-gray-900"
+            />
           ))}
         </div>
         
