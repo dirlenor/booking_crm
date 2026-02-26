@@ -43,9 +43,16 @@ export function BestPriceOffer() {
           Follow this simple flow to complete your booking journey from selection to payment.
         </p>
 
-        <ul className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-section="how_it_work_steps">
+        <ul
+          className="no-scrollbar -mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 xl:grid-cols-4"
+          data-section="how_it_work_steps"
+        >
           {steps.map((step) => (
-            <li key={step.id} className="rounded-xl bg-white p-4 shadow-sm" data-section={`how_it_work_step_${step.id}`}>
+            <li
+              key={step.id}
+              className="min-w-[250px] snap-start rounded-xl bg-white p-4 shadow-sm md:min-w-0"
+              data-section={`how_it_work_step_${step.id}`}
+            >
               <div className="overflow-hidden rounded-lg bg-slate-50 aspect-square">
                 <Image
                   src={step.image}

@@ -62,9 +62,9 @@ export function LatestNews() {
           <Button variant="outline" className="hidden md:flex">Read All Articles</Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pb-0">
           {articles.map((article, index) => (
-            <div key={index} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group">
+            <div key={index} className="group min-w-[285px] snap-start overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg md:min-w-0">
               <div className="relative h-48 overflow-hidden">
                 <img 
                   src={article.image} 
