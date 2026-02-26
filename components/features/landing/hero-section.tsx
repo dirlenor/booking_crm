@@ -63,9 +63,9 @@ export function HeroSection() {
             className="absolute inset-x-0 bottom-16 text-center font-sans text-3xl leading-tight text-white md:bottom-20 md:text-6xl"
             data-section="hero_title"
           >
-            Book <span className="font-semibold italic text-[#D6F661]">200,000+</span>
+            Book <span className="font-semibold italic text-[#D6F661]">2,000+</span>
             <br />
-            activities worldwide
+            activities thailand.
           </h1>
         </div>
       </div>

@@ -52,12 +52,12 @@ export function LatestNews() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="bg-gray-50 py-[60px]">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <span className="text-accent font-bold uppercase tracking-wide text-sm">Travel Blog</span>
-            <h2 className="text-3xl font-bold text-primary mt-2">Latest News & Articles</h2>
+            <span className="text-sm font-semibold uppercase tracking-wide text-slate-700">Travel Blog</span>
+            <h2 className="mt-2 text-3xl font-bold text-slate-900">Travel Guides</h2>
           </div>
           <Button variant="outline" className="hidden md:flex">Read All Articles</Button>
         </div>

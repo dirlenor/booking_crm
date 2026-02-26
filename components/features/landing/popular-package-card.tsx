@@ -31,11 +31,11 @@ export function PopularPackageCard({
   const content = (
     <div
       className={cn(
-        "group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100",
+        "group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:shadow-xl",
         className
       )}
     >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[16/9] overflow-hidden">
         <img
           src={pkg.image}
           alt={pkg.title}
@@ -46,7 +46,7 @@ export function PopularPackageCard({
         </div>
       </div>
 
-      <div className="p-5">
+      <div className="p-4">
         <div className="flex items-center gap-1 text-yellow-500 text-sm mb-2">
           <Star className="w-4 h-4 fill-current" />
           <span className="font-semibold text-gray-900">{pkg.rating}</span>
@@ -55,14 +55,14 @@ export function PopularPackageCard({
 
         <h3
           className={cn(
-            "font-bold text-lg mb-2 transition-colors line-clamp-1",
+            "mb-2 line-clamp-1 text-base font-bold transition-colors",
             titleClassName ?? "text-primary group-hover:text-accent"
           )}
         >
           {pkg.title}
         </h3>
 
-        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+        <div className="mb-3 flex items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4" />
             <span className="truncate max-w-[80px]">{pkg.location}</span>
@@ -73,10 +73,10 @@ export function PopularPackageCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between border-t border-gray-100 pt-3">
           <div>
             <span className="text-xs text-gray-400 block">From</span>
-            <span className="font-bold text-primary text-lg">{pkg.price}</span>
+            <span className="text-base font-bold text-primary">{pkg.price}</span>
           </div>
           {showCta && (
             <Button

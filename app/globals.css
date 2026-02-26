@@ -59,7 +59,7 @@
 :root {
   --radius: 0.75rem;
   
-  --background: #f3f4f6;
+  --background: #f2f2f2;
   --foreground: #1e3a5f;
   
   --card: #ffffff;
@@ -158,6 +158,10 @@
 }
 
 @layer utilities {
+  .public-shell .container {
+    max-width: 72rem;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

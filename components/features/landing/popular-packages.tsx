@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
   PopularPackageCard,
@@ -14,6 +13,8 @@ function mapDurationToDaysLabel(duration: string | null): string {
   if (!Number.isFinite(days) || days < 1) return duration;
   return days === 1 ? "1 Day" : `${days} Days`;
 }
+
+const popularCities = ["Bangkok", "Singapore", "Phuket", "Pattaya", "Chiang Mai"];
 
 export async function PopularPackages() {
   const packageRes = await getPackages({ status: "published", limit: 8 });
@@ -35,14 +36,38 @@ export async function PopularPackages() {
   }));
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="mb-12">
-          <h2 className="text-3xl font-bold text-primary mb-2">Popular Tour Packages</h2>
-          <p className="text-gray-500">Explore our best-selling tour packages</p>
+    <section className="bg-white py-[60px]">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-10 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Popular things to do</h2>
+            <p className="mt-2 text-slate-700">Top activities in major cities</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              {popularCities.map((city, index) => (
+                <Link
+                  key={city}
+                  href={`/destinations?city=${encodeURIComponent(city)}`}
+                  className={`rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors ${
+                    index === 0
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-slate-300 bg-transparent text-slate-600 hover:border-slate-400 hover:text-slate-800"
+                  }`}
+                >
+                  {city}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <Link
+            href="/destinations"
+            className="hidden text-base font-semibold text-slate-800 underline-offset-4 transition-colors hover:text-slate-950 hover:underline md:inline"
+          >
+            See all destinations
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {packages.map((pkg) => (
             <PopularPackageCard
               key={pkg.id}
@@ -53,11 +78,14 @@ export async function PopularPackages() {
             />
           ))}
         </div>
-        
-        <div className="mt-10 flex justify-center">
-          <Button variant="outline" className="border-primary bg-transparent text-primary hover:bg-transparent hover:text-primary px-8" asChild>
-            <Link href="/destinations">View All Tours</Link>
-          </Button>
+
+        <div className="mt-8 md:hidden">
+          <Link
+            href="/destinations"
+            className="inline-block text-base font-semibold text-slate-800 underline-offset-4 hover:underline"
+          >
+            See all destinations
+          </Link>
         </div>
       </div>
     </section>

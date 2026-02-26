@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import brandLogo from "@/image/Primary_Logo_3_White-01 1.png";
 
 export function LandingFooter() {
@@ -25,13 +25,7 @@ export function LandingFooter() {
                 <Facebook className="w-5 h-5" />
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-colors">
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-accent transition-colors">
-                <Linkedin className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -47,22 +41,17 @@ export function LandingFooter() {
               </li>
               <li>
                 <Link href="#" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
-                  Destinations
+                  Popular Cities
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
-                  Tour Packages
+                  Transportation
                 </Link>
               </li>
               <li>
                 <Link href="#" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
-                  Travel Guides
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="text-gray-300 hover:text-white hover:translate-x-1 transition-all inline-block">
-                  Services
+                  Travel Guidelines
                 </Link>
               </li>
             </ul>
