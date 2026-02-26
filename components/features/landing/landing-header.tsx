@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Search, ChevronDown, LogOut, ShoppingCart } from "lucide-react";
+import { ChevronDown, CircleHelp, Download, LogOut, ShoppingCart, Globe } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { getLocalCartCount } from "@/lib/cart/local-cart";
 import brandLogo from "@/image/Primary_Logo_3-01 1.png";
+import brandLogoWhite from "@/image/Primary_Logo_3_White-01 1.png";
 
 export function LandingHeader() {
   const router = useRouter();
@@ -17,15 +18,15 @@ export function LandingHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [pageMenuOpen, setPageMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [cartHit, setCartHit] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [headerSolid, setHeaderSolid] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const pageMenuRef = useRef<HTMLDivElement | null>(null);
   const authNext = pathname && pathname !== "/login" && pathname !== "/register" ? pathname : "/";
   const loginHref = `/login?next=${encodeURIComponent(authNext)}`;
   const registerHref = `/register?next=${encodeURIComponent(authNext)}`;
+  const isHome = pathname === "/";
+  const isOverlay = isHome && !headerSolid;
 
   useEffect(() => {
     let isMounted = true;
@@ -80,15 +81,26 @@ export function LandingHeader() {
       if (!menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false);
       }
-
-      if (pageMenuRef.current && !pageMenuRef.current.contains(event.target as Node)) {
-        setPageMenuOpen(false);
-      }
     };
 
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, []);
+
+  useEffect(() => {
+    if (!isHome) {
+      setHeaderSolid(true);
+      return;
+    }
+
+    const updateHeaderState = () => {
+      setHeaderSolid(window.scrollY > 12);
+    };
+
+    updateHeaderState();
+    window.addEventListener("scroll", updateHeaderState, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeaderState);
+  }, [isHome]);
 
   const displayName = useMemo(() => {
     if (!user) return "";
@@ -109,150 +121,150 @@ export function LandingHeader() {
     router.refresh();
   };
 
-  const submitSearch: NonNullable<ComponentProps<"form">["onSubmit"]> = (event) => {
-    event.preventDefault();
-    const query = searchKeyword.trim();
-    if (!query) {
-      router.push("/destinations");
-      return;
-    }
-    router.push(`/destinations?attraction=${encodeURIComponent(query)}`);
-  };
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 bg-white">
-      <div className="border-b border-gray-100">
-        <div className="container mx-auto flex h-16 items-center gap-3 px-4">
-          <Link href="/" className="flex items-center">
-            <Image
-              src={brandLogo}
-              alt="NovaTrip logo"
-              className="h-8 w-auto"
-              priority
-            />
-          </Link>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 border-b transition-all duration-300 ${
+        isOverlay
+          ? "border-transparent bg-transparent text-white"
+          : "border-gray-200 bg-white/95 text-gray-700 backdrop-blur"
+      }`}
+    >
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:h-20">
+        <Link href="/" className="flex items-center">
+          <Image
+            src={isOverlay ? brandLogoWhite : brandLogo}
+            alt="NovaTrip logo"
+            className="h-8 w-auto"
+            priority
+          />
+        </Link>
 
-          <form onSubmit={submitSearch} className="hidden md:flex max-w-xl flex-1 items-center rounded-full border border-gray-200 bg-gray-50 px-4 py-2" data-section="header_attraction_search">
-            <Search className="mr-2 h-4 w-4 text-gray-500" />
-            <input
-              value={searchKeyword}
-              onChange={(event) => setSearchKeyword(event.target.value)}
-              placeholder="Search attractions or routes"
-              className="h-6 w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-            />
-          </form>
-
-          <div className="ml-auto flex items-center gap-3 text-sm text-gray-600">
-            <div className="hidden lg:flex items-center gap-1">
-              <span>THB</span>
-              <ChevronDown className="h-3.5 w-3.5" />
-            </div>
-
+        <div className="ml-auto flex items-center gap-3 text-sm md:gap-4">
+          <div className="hidden items-center gap-4 lg:flex">
             <Link
-              href="/cart"
-              data-cart-anchor="true"
-              className={`relative text-gray-600 hover:text-primary transition-all duration-300 ${cartHit ? "scale-125 text-primary" : "scale-100"}`}
+              href="/destinations"
+              className={`inline-flex items-center gap-1.5 transition-colors ${
+                isOverlay ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-primary"
+              }`}
             >
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 ? (
-                <span className={`absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-semibold leading-[18px] text-center transition-transform duration-300 ${cartHit ? "scale-125" : "scale-100"}`}>
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              ) : null}
+              <Download className="h-4 w-4" />
+              Get the app
             </Link>
 
-            {!authReady ? (
-              <div className="h-10 w-[140px] rounded-full bg-gray-100 animate-pulse" />
-            ) : user ? (
-              <div ref={menuRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-primary hover:border-primary/30"
-                >
-                  <span className="max-w-[140px] truncate">{displayName}</span>
-                  <ChevronDown className="h-4 w-4" />
-                </button>
-
-                {menuOpen ? (
-                  <div className="absolute right-0 mt-2 w-52 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
-                    <Link
-                      href="/profile"
-                      className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => void handleLogout()}
-                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Log out
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            ) : (
-              <>
-                <Link href={registerHref} className="hidden md:inline text-sm font-semibold text-gray-700 hover:text-primary">
-                  Sign up
-                </Link>
-                <Link href={loginHref}>
-                  <Button className="h-10 rounded-full bg-primary px-5 text-white hover:bg-primary/90">Log in</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="hidden md:block">
-        <div className="container mx-auto flex h-14 items-center justify-between px-4 text-[15px] font-medium text-gray-700">
-          <div className="flex items-center gap-7">
-            <Link href="/#home-top" className="hover:text-primary">Home</Link>
-            <Link href="/destinations" className="hover:text-primary">Attrachtion</Link>
-            <Link href="/about" className="hover:text-primary">About Us</Link>
-            <Link href="/contact" className="hover:text-primary">Contact Us</Link>
-          </div>
-
-          <div ref={pageMenuRef} className="relative">
             <button
               type="button"
-              onClick={() => setPageMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-semibold text-gray-700 hover:border-primary/40 hover:text-primary"
+              className={`inline-flex items-center gap-1 transition-colors ${
+                isOverlay ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-primary"
+              }`}
             >
-              Page
-              <ChevronDown className="h-4 w-4" />
+              THB
+              <ChevronDown className="h-3.5 w-3.5" />
             </button>
 
-            {pageMenuOpen ? (
-              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl">
-                  {[
-                    { href: "/", label: "Home" },
-                    { href: "/about", label: "About Us" },
-                    { href: "/contact", label: "Contact Us" },
-                    { href: "/cart", label: "Cart" },
-                    { href: "/checkout", label: "Checkout" },
-                    { href: "/payment", label: "Payment" },
-                    { href: "/thank-you", label: "Thank You" },
-                    { href: "/profile", label: "Profile" },
-                    { href: loginHref, label: "Login" },
-                    { href: registerHref, label: "Register" },
-                  ].map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                    onClick={() => setPageMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            ) : null}
+            <button
+              type="button"
+              className={`inline-flex items-center gap-1 transition-colors ${
+                isOverlay ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-primary"
+              }`}
+            >
+              <Globe className="h-4 w-4" />
+              English
+            </button>
+
+            <Link
+              href="/contact"
+              className={`inline-flex items-center gap-1.5 transition-colors ${
+                isOverlay ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-primary"
+              }`}
+            >
+              <CircleHelp className="h-4 w-4" />
+              Support
+            </Link>
           </div>
+
+          <Link
+            href="/cart"
+            data-cart-anchor="true"
+            className={`relative transition-all duration-300 ${
+              isOverlay ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-primary"
+            } ${cartHit ? "scale-125" : "scale-100"}`}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 ? (
+              <span
+                className={`absolute -top-2 -right-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-semibold text-white transition-transform duration-300 ${
+                  cartHit ? "scale-125" : "scale-100"
+                } ${isOverlay ? "bg-white/90 text-primary" : "bg-accent text-white"}`}
+              >
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            ) : null}
+          </Link>
+
+          {!authReady ? (
+            <div
+              className={`h-10 w-[140px] animate-pulse rounded-full ${
+                isOverlay ? "bg-white/30" : "bg-gray-100"
+              }`}
+            />
+          ) : user ? (
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
+                  isOverlay
+                    ? "border-white/45 bg-white/15 text-white hover:border-white/70"
+                    : "border-gray-200 bg-white text-primary hover:border-primary/30"
+                }`}
+              >
+                <span className="max-w-[140px] truncate">{displayName}</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+
+              {menuOpen ? (
+                <div className="absolute right-0 mt-2 w-52 rounded-xl border border-gray-200 bg-white p-1.5 text-gray-700 shadow-xl">
+                  <Link
+                    href="/profile"
+                    className="block rounded-lg px-3 py-2 text-sm hover:bg-gray-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log out
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <>
+              <Link
+                href={loginHref}
+                className={`text-sm font-semibold transition-colors ${
+                  isOverlay ? "text-white/90 hover:text-white" : "text-gray-700 hover:text-primary"
+                }`}
+              >
+                Log in
+              </Link>
+              <Link href={registerHref}>
+                <Button
+                  className={`h-10 rounded-full px-5 ${
+                    isOverlay
+                      ? "border border-white/70 bg-transparent text-white hover:bg-white/12"
+                      : "bg-primary text-white hover:bg-primary/90"
+                  }`}
+                >
+                  Sign up
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

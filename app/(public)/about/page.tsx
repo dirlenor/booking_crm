@@ -48,7 +48,7 @@ const galleryImages = [
 
 export default function AboutPage() {
   return (
-    <div className="-mt-20 md:-mt-32">
+    <div className="-mt-16 md:-mt-20">
       {/* ── Hero Section ── */}
       <section className="relative flex h-[60vh] min-h-[500px] items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
