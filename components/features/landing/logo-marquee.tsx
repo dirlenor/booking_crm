@@ -34,7 +34,12 @@ export function LogoMarquee() {
                 key={`${logo.alt}-${index}`}
                 className="flex h-20 min-w-[190px] items-center justify-center rounded-2xl bg-white px-2"
               >
-                <Image src={logo.src} alt={logo.alt} className="h-12 w-auto rounded-xl object-contain" />
+                <Image
+                  src={logo.src}
+                  alt={logo.alt}
+                  unoptimized
+                  className="h-12 w-auto rounded-xl object-contain"
+                />
               </div>
             ))}
           </div>

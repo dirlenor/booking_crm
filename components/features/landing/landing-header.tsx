@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, CircleHelp, Download, LogOut, ShoppingCart, Globe } from "lucide-react";
+import { ChevronDown, CircleHelp, Download, LogOut, ShoppingCart, Globe, Menu, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { getLocalCartCount } from "@/lib/cart/local-cart";
@@ -18,6 +18,7 @@ export function LandingHeader() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [cartHit, setCartHit] = useState(false);
   const [headerSolid, setHeaderSolid] = useState(false);
@@ -27,6 +28,7 @@ export function LandingHeader() {
   const registerHref = `/register?next=${encodeURIComponent(authNext)}`;
   const isHome = pathname === "/";
   const isOverlay = isHome && !headerSolid;
+  const mobileItemClass = isOverlay ? "rounded-md px-2 py-1.5 hover:bg-white/10" : "rounded-md px-2 py-1.5 hover:bg-slate-100";
 
   useEffect(() => {
     let isMounted = true;
@@ -88,6 +90,10 @@ export function LandingHeader() {
   }, []);
 
   useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (!isHome) {
       setHeaderSolid(true);
       return;
@@ -139,8 +145,8 @@ export function LandingHeader() {
           />
         </Link>
 
-        <div className="ml-auto flex items-center gap-3 text-sm md:gap-4">
-          <div className="hidden items-center gap-4 lg:flex">
+        <div className="ml-auto flex items-center gap-2 text-sm md:gap-3">
+          <div className="hidden items-center gap-4 xl:flex">
             <Link
               href="/destinations"
               className={`inline-flex items-center gap-1.5 transition-colors ${
@@ -201,6 +207,19 @@ export function LandingHeader() {
             ) : null}
           </Link>
 
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors xl:hidden ${
+              isOverlay
+                ? "border-white/45 bg-white/10 text-white hover:border-white/70"
+                : "border-slate-300 bg-white text-slate-700 hover:border-slate-400"
+            }`}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+
           {!authReady ? (
             <div
               className={`h-10 w-[140px] animate-pulse rounded-full ${
@@ -246,7 +265,7 @@ export function LandingHeader() {
             <>
               <Link
                 href={loginHref}
-                className={`text-sm font-semibold transition-colors ${
+                className={`hidden text-sm font-semibold transition-colors sm:inline ${
                   isOverlay ? "text-white/90 hover:text-white" : "text-gray-700 hover:text-primary"
                 }`}
               >
@@ -254,7 +273,7 @@ export function LandingHeader() {
               </Link>
               <Link href={registerHref}>
                 <Button
-                  className={`h-10 rounded-full px-5 ${
+                  className={`h-9 rounded-full px-4 text-xs sm:h-10 sm:px-5 sm:text-sm ${
                     isOverlay
                       ? "border border-white/70 bg-transparent text-white hover:bg-white/12"
                       : "bg-primary text-white hover:bg-primary/90"
@@ -267,6 +286,29 @@ export function LandingHeader() {
           )}
         </div>
       </div>
+
+      {mobileMenuOpen ? (
+        <div
+          className={`border-t xl:hidden ${
+            isOverlay ? "border-white/20 bg-[#052438]/92 text-white" : "border-slate-200 bg-white text-slate-700"
+          }`}
+        >
+          <div className="container mx-auto grid grid-cols-2 gap-2 px-4 py-3 text-sm font-medium">
+            <Link href="/destinations" className={mobileItemClass}>
+              Get the app
+            </Link>
+            <button type="button" className={`${mobileItemClass} text-left`}>
+              THB
+            </button>
+            <button type="button" className={`${mobileItemClass} text-left`}>
+              English
+            </button>
+            <Link href="/contact" className={mobileItemClass}>
+              Support
+            </Link>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

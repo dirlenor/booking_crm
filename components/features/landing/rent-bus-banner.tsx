@@ -6,8 +6,8 @@ export function RentBusBanner() {
   return (
     <section className="bg-white py-[60px]">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
-          <div className="relative flex h-[84px] w-full items-center justify-center rounded-xl bg-primary md:w-[220px]">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
+          <div className="relative flex h-[84px] w-full items-center justify-center rounded-xl bg-primary sm:w-[220px] lg:w-[220px]">
             <Image
               src={retroBus}
               alt="Retro bus"
@@ -16,14 +16,14 @@ export function RentBusBanner() {
             />
           </div>
 
-          <div className="flex h-[84px] w-full items-center justify-between rounded-xl bg-primary px-6 md:px-8">
-            <p className="text-sm font-semibold text-white md:text-xl">
+          <div className="flex w-full flex-col items-start gap-3 rounded-xl bg-primary px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-8">
+            <p className="text-sm font-semibold text-white sm:text-base md:text-lg">
               More Service Rent bus to <span className="text-lg font-bold italic text-[#D6F661] md:text-2xl">pick up</span> from airport
             </p>
 
             <Link
               href="/destinations"
-              className="ml-4 inline-flex h-10 shrink-0 items-center justify-center rounded-md border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="inline-flex h-10 w-full shrink-0 items-center justify-center rounded-md border border-white/35 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10 sm:ml-4 sm:w-auto"
             >
               Book Now
             </Link>

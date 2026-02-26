@@ -18,12 +18,12 @@ export function IconMenuSection() {
   return (
     <section className="bg-white py-[60px]">
       <div className="container mx-auto px-4">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-7 sm:grid-cols-3 md:grid-cols-5">
+        <div className="no-scrollbar mx-auto flex max-w-5xl gap-6 overflow-x-auto pb-2 md:grid md:grid-cols-5 md:gap-y-7 md:overflow-visible md:pb-0">
           {menuItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="group flex flex-col items-center justify-start text-center"
+              className="group flex min-w-[100px] flex-col items-center justify-start text-center md:min-w-0"
             >
               <Image
                 src={item.icon}

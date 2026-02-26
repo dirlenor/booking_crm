@@ -20,7 +20,7 @@ export function HeroSection() {
   return (
     <section
       id="home-top"
-      className="relative -mt-16 h-[40vh] overflow-hidden scroll-mt-36 md:-mt-20"
+      className="relative -mt-16 h-[40vh] min-h-[340px] overflow-hidden scroll-mt-36 sm:min-h-[380px] md:-mt-20 md:min-h-[430px] lg:min-h-[460px]"
       data-section="hero_wrapper"
     >
       <img
@@ -31,10 +31,10 @@ export function HeroSection() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-[#052438]/70 via-[#052438]/35 to-[#03131f]/70" />
 
-      <div className="container relative z-10 mx-auto h-full px-4 pb-14 md:pb-16">
+      <div className="container relative z-10 mx-auto h-full px-4 pb-12 md:pb-16">
         <div className="mx-auto h-full max-w-4xl" data-section="hero_main">
           <div
-            className="absolute top-[47%] left-1/2 -mt-8 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 md:top-[46%] md:max-w-[700px]"
+            className="absolute top-[40%] left-1/2 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 sm:top-[41%] sm:w-[calc(100%-2.5rem)] md:top-[43%] md:max-w-[680px] lg:top-[44%]"
             data-section="hero_bottom_bar"
           >
             <div
@@ -60,7 +60,7 @@ export function HeroSection() {
           </div>
 
           <h1
-            className="absolute inset-x-0 bottom-16 text-center font-sans text-3xl leading-tight text-white md:bottom-20 md:text-6xl"
+            className="absolute inset-x-0 bottom-14 px-4 text-center font-sans text-2xl leading-tight text-white sm:text-4xl md:bottom-16 md:text-5xl xl:text-6xl"
             data-section="hero_title"
           >
             Book <span className="font-semibold italic text-[#D6F661]">2,000+</span>

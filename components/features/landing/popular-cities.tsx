@@ -47,17 +47,17 @@ export function PopularCitiesSection() {
   return (
     <section className="bg-white py-[60px]">
       <div className="container mx-auto px-4">
-        <div className="mb-8 flex items-end justify-between gap-4">
+        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-slate-900">Explore our destinations</h2>
             <p className="mt-2 text-slate-700">Popular cities across Thailand</p>
           </div>
-            <Link
-              href="/destinations"
-              className="hidden text-base font-semibold text-slate-800 underline-offset-4 transition-colors hover:text-slate-950 hover:underline md:inline"
-            >
-              See all destinations
-            </Link>
+          <Link
+            href="/destinations"
+            className="hidden text-base font-semibold text-slate-800 underline-offset-4 transition-colors hover:text-slate-950 hover:underline md:inline"
+          >
+            See all destinations
+          </Link>
         </div>
 
         <div className="mb-8 flex flex-wrap gap-3">
@@ -76,12 +76,12 @@ export function PopularCitiesSection() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 xl:grid-cols-6">
           {popularCities.map((city) => (
             <Link
               key={city.name}
               href={`/destinations?city=${encodeURIComponent(city.name)}`}
-              className="overflow-hidden rounded-2xl border border-slate-300 bg-white transition-shadow duration-200 hover:shadow-md"
+              className="min-w-[232px] snap-start overflow-hidden rounded-2xl border border-slate-300 bg-white transition-shadow duration-200 hover:shadow-md md:min-w-0"
             >
               <div className="h-[210px] overflow-hidden">
                 <img

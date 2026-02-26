@@ -38,7 +38,7 @@ export async function PopularPackages() {
   return (
     <section className="bg-white py-[60px]">
       <div className="container mx-auto max-w-6xl px-4">
-        <div className="mb-10 flex items-end justify-between gap-4">
+        <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-3xl font-bold text-slate-900">Popular things to do</h2>
             <p className="mt-2 text-slate-700">Top activities in major cities</p>
@@ -67,15 +67,16 @@ export async function PopularPackages() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 xl:grid-cols-4">
           {packages.map((pkg) => (
-            <PopularPackageCard
-              key={pkg.id}
-              pkg={pkg}
-              href={`/destinations/${pkg.id}`}
-              showCta={false}
-              titleClassName="text-gray-900 group-hover:text-gray-900"
-            />
+            <div key={pkg.id} className="min-w-[260px] snap-start md:min-w-0">
+              <PopularPackageCard
+                pkg={pkg}
+                href={`/destinations/${pkg.id}`}
+                showCta={false}
+                titleClassName="text-gray-900 group-hover:text-gray-900"
+              />
+            </div>
           ))}
         </div>
 
