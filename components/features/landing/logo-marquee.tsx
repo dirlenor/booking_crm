@@ -1,13 +1,13 @@
 import Image from "next/image";
-import booking from "@/image/logopartner/Booking.com_ Hotels & Travel.png";
-import expedia from "@/image/logopartner/Expedia_ Hotels, Flights, Cars.png";
-import klook from "@/image/logopartner/Klook_ Travel & Activities.png";
-import oyo from "@/image/logopartner/OYO_ Hotel Booking App & Deals.png";
-import priceline from "@/image/logopartner/Priceline - Hotel, Car, Flight.png";
-import traveloka from "@/image/logopartner/Traveloka_ Book Hotel & Flight.png";
-import trip from "@/image/logopartner/Trip.com_ Book Flights, Hotels.png";
-import tripadvisor from "@/image/logopartner/Tripadvisor_ Plan & Book Trips.png";
-import trivago from "@/image/logopartner/trivago_ Compare hotel prices.png";
+import booking from "@/image/logopartner/booking.png";
+import expedia from "@/image/logopartner/expedia.png";
+import klook from "@/image/logopartner/klook.png";
+import oyo from "@/image/logopartner/oyo.png";
+import priceline from "@/image/logopartner/priceline.png";
+import traveloka from "@/image/logopartner/traveloka.png";
+import trip from "@/image/logopartner/tripcom.png";
+import tripadvisor from "@/image/logopartner/tripadvisor.png";
+import trivago from "@/image/logopartner/trivago.png";
 
 const logos = [
   { src: booking, alt: "Booking.com" },
