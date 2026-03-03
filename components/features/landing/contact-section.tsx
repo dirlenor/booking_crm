@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export function ContactSection() {
   return (
-    <section id="contact-us-section" className="scroll-mt-36 border-t border-gray-100 bg-white py-[60px]">
+    <section id="contact-us-section" className="scroll-mt-36 border-t border-gray-100 bg-white py-8 md:py-[60px]">
       <div className="container mx-auto px-4">
         <div className="bg-primary rounded-3xl p-8 md:p-12 overflow-hidden relative">
           {/* Background Patterns */}

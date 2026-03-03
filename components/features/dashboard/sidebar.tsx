@@ -128,12 +128,12 @@ export function Sidebar() {
               className={cn(
                 "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 isProductPath
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                  ? "bg-primary text-primary-foreground font-semibold"
                   : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground text-muted-foreground"
               )}
             >
               <span className="flex items-center gap-3">
-                <Package className={cn("size-5", isProductPath ? "text-sidebar-primary" : "text-muted-foreground")} />
+                <Package className={cn("size-5", isProductPath ? "text-primary-foreground" : "text-muted-foreground")} />
                 Products
               </span>
               {showProductChildren ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
@@ -210,11 +210,11 @@ function SidebarItem({
         "flex items-center gap-3 rounded-md text-sm font-medium transition-colors",
         compact ? "px-2 py-1.5" : "px-3 py-2",
         isActive 
-          ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" 
+          ? "bg-primary text-primary-foreground font-semibold" 
           : "hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground text-muted-foreground"
       )}
     >
-      <Icon className={cn(compact ? "size-4" : "size-5", isActive ? "text-sidebar-primary" : "text-muted-foreground")} />
+      <Icon className={cn(compact ? "size-4" : "size-5", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
       {label}
     </Link>
   )

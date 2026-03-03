@@ -45,7 +45,7 @@ const popularCities = [
 
 export function PopularCitiesSection() {
   return (
-    <section className="bg-white py-[60px]">
+    <section className="bg-white py-8 md:py-[60px]">
       <div className="container mx-auto px-4">
         <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>

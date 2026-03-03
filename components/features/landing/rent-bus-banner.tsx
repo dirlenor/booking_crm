@@ -4,7 +4,7 @@ import retroBus from "@/image/retro bus.png";
 
 export function RentBusBanner() {
   return (
-    <section className="bg-white py-[60px]">
+    <section className="bg-white py-8 md:py-[60px]">
       <div className="container mx-auto px-4">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
           <div className="relative flex h-[84px] w-full items-center justify-center rounded-xl bg-primary sm:w-[220px] lg:w-[220px]">

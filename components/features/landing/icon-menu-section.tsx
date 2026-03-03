@@ -16,21 +16,57 @@ const menuItems = [
 
 export function IconMenuSection() {
   return (
-    <section className="bg-white py-[60px]">
+    <section className="bg-white pt-16 pb-8 md:py-[60px]">
       <div className="container mx-auto px-4">
-        <div className="no-scrollbar mx-auto flex max-w-5xl gap-6 overflow-x-auto pb-2 md:grid md:grid-cols-5 md:gap-y-7 md:overflow-visible md:pb-0">
+        <div className="mx-auto max-w-5xl md:hidden">
+          <div className="flex items-start justify-center gap-x-8">
+            {menuItems.slice(0, 3).map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="group flex w-[88px] flex-col items-center justify-start text-center"
+              >
+                <Image
+                  src={item.icon}
+                  alt={item.label}
+                  className="h-14 w-14 object-contain transition-transform duration-200 group-hover:-translate-y-0.5"
+                />
+                <span className="mt-3 text-base font-semibold text-slate-900">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-7 flex items-start justify-center gap-x-8">
+            {menuItems.slice(3).map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="group flex w-[88px] flex-col items-center justify-start text-center"
+              >
+                <Image
+                  src={item.icon}
+                  alt={item.label}
+                  className="h-14 w-14 object-contain transition-transform duration-200 group-hover:-translate-y-0.5"
+                />
+                <span className="mt-3 text-base font-semibold text-slate-900">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="mx-auto hidden max-w-5xl md:grid md:grid-cols-5 md:gap-y-7">
           {menuItems.map((item) => (
             <Link
               key={item.label}
               href={item.href}
-              className="group flex min-w-[100px] flex-col items-center justify-start text-center md:min-w-0"
+              className="group flex flex-col items-center justify-start text-center"
             >
               <Image
                 src={item.icon}
                 alt={item.label}
-                className="h-14 w-14 object-contain transition-transform duration-200 group-hover:-translate-y-0.5 md:h-16 md:w-16"
+                className="h-16 w-16 object-contain transition-transform duration-200 group-hover:-translate-y-0.5"
               />
-              <span className="mt-3 text-base font-semibold text-slate-900 md:text-lg">{item.label}</span>
+              <span className="mt-3 text-lg font-semibold text-slate-900">{item.label}</span>
             </Link>
           ))}
         </div>

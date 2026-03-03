@@ -25,10 +25,10 @@ const marqueeLogos = [...logos, ...logos];
 
 export function LogoMarquee() {
   return (
-    <section className="bg-white py-[60px]" data-section="logo_marquee_section">
+    <section className="bg-white py-8 md:py-[60px]" data-section="logo_marquee_section">
       <div className="container mx-auto px-4">
         <div className="overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-          <div className="logo-marquee-track flex w-max items-center gap-6">
+          <div className="logo-marquee-track flex w-max items-center gap-3 md:gap-6">
             {marqueeLogos.map((logo, index) => (
               <div
                 key={`${logo.alt}-${index}`}

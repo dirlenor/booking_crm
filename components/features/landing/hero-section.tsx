@@ -34,9 +34,18 @@ export function HeroSection() {
       <div className="container relative z-10 mx-auto h-full px-4 pb-12 md:pb-16">
         <div className="mx-auto h-full max-w-4xl" data-section="hero_main">
           <div
-            className="absolute top-[40%] left-1/2 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 sm:top-[41%] sm:w-[calc(100%-2.5rem)] md:top-[43%] md:max-w-[680px] lg:top-[44%]"
+            className="absolute top-[46%] left-1/2 w-[calc(100%-1.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 sm:top-[47%] sm:w-[calc(100%-2.5rem)] md:top-[48%] md:max-w-[680px]"
             data-section="hero_bottom_bar"
           >
+            <h1
+              className="mb-3 px-4 text-center font-sans text-xl leading-tight text-white sm:text-2xl md:mb-4 md:text-4xl"
+              data-section="hero_title"
+            >
+              Book <span className="font-semibold italic text-[#D6F661]">2,000+</span>
+              <br />
+              activities thailand.
+            </h1>
+
             <div
               className="rounded-full bg-white/92 p-1.5 shadow-[0_12px_34px_rgba(3,19,31,0.35)]"
               data-section="hero_search_glow_wrap"
@@ -59,14 +68,6 @@ export function HeroSection() {
             </div>
           </div>
 
-          <h1
-            className="absolute inset-x-0 bottom-14 px-4 text-center font-sans text-2xl leading-tight text-white sm:text-4xl md:bottom-16 md:text-5xl xl:text-6xl"
-            data-section="hero_title"
-          >
-            Book <span className="font-semibold italic text-[#D6F661]">2,000+</span>
-            <br />
-            activities thailand.
-          </h1>
         </div>
       </div>
 

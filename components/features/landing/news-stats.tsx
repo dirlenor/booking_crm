@@ -52,7 +52,7 @@ export function LatestNews() {
   ];
 
   return (
-    <section className="bg-gray-50 py-[60px]">
+    <section className="bg-gray-50 py-8 md:py-[60px]">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-12">
           <div>

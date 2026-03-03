@@ -33,7 +33,7 @@ export function BestPriceOffer() {
   ];
 
   return (
-    <section className="bg-gray-50 py-[60px]" data-section="how_it_work_section">
+    <section className="bg-gray-50 py-8 md:py-[60px]" data-section="how_it_work_section">
       <div className="container mx-auto px-4">
         <span className="text-sm font-semibold uppercase tracking-wide text-slate-700">How It Works</span>
         <h2 className="mt-2 text-3xl font-bold text-slate-900">
